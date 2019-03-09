@@ -14,12 +14,7 @@ var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
 
-const {
-  Document,
-  Paragraph,
-  Packer,
-  TextRun
-} = docx;
+const { Document, Paragraph, Packer, TextRun } = docx;
 
 router.use(bodyParser.urlencoded({
   extended: true
@@ -27,7 +22,7 @@ router.use(bodyParser.urlencoded({
 
 router.use(bodyParser.json());
 router.use(cors())
-
+ 
 /*router.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -89,7 +84,9 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph(" ");
 
-  const ref = new TextRun("Our Ref: OVERDUE/" + letter_data.cardacct + '/' + DATE);
+  document.createParagraph(" ");
+
+  const ref = new TextRun("Our Ref: SUSPENSION/" + letter_data.cardacct + '/' + DATE);
   const paragraphref = new Paragraph();
   ref.bold();
   ref.size(28);
@@ -108,96 +105,59 @@ router.post('/download', function (req, res) {
 
   const name = new TextRun(letter_data.cardname);
   const pname = new Paragraph();
-  name.font("Garamond");
   name.size(28);
   pname.addRun(name);
   document.addParagraph(pname);
 
   const address = new TextRun(letter_data.address + '- ' + letter_data.rpcode);
   const paddress = new Paragraph();
-  address.font("Garamond");
   address.size(28);
   paddress.addRun(address);
   document.addParagraph(paddress);
 
   const city = new TextRun(letter_data.city);
   const pcity = new Paragraph();
-  city.font("Garamond");
   city.size(28);
   pcity.addRun(city);
   document.addParagraph(pcity);
   document.createParagraph(" ");
 
-  const txtdear = new TextRun("Dear sir/madam ");
-  const ptxtdear = new Paragraph();
-  txtdear.font("Garamond");
-  txtdear.size(28);
-  ptxtdear.addRun(txtdear);
-  document.addParagraph(ptxtdear);
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: YOUR CARD ACCOUNT NUMBER: " + letter_data.cardacct);
+  document.createParagraph("Dear sir/madam ");
+  document.createParagraph(" ");
+
+  const headertext = new TextRun("RE: CO-OPCARD ACCOUNT NO: " + letter_data.cardacct);
   const paragraphheadertext = new Paragraph();
   headertext.bold();
-  headertext.font("Garamond");
-  headertext.size(28);
   headertext.underline();
   paragraphheadertext.addRun(headertext);
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  const txt1 = new TextRun("We would like to draw your attention to your Co-op card account which is currently overdue. The total amount overdue is Kshs " + numeral(letter_data.EXP_PMNT).format('0,0.00') + " while your current outstanding balance is Kshs " + numeral(letter_data.OUT_BALANCE).format('0,0.00') + " ");
-  const ptxt1 = new Paragraph();
-  txt1.size(24);
-  txt1.font("Garamond");
-  ptxt1.addRun(txt1);
-  ptxt1.justified();
-  document.addParagraph(ptxt1);
+  const txt = new TextRun("Your Co-opcard offers many exclusive benefits in addition to the unsecured credit facility. In order for you to enjoy these benefits to the full, proper maintenance of the account is vital.  We regret this has not been the case.");
+  const ptxt = new Paragraph();
+  txt.size(24);
+  ptxt.addRun(txt);
+  ptxt.justified();
+  document.addParagraph(ptxt);
 
   document.createParagraph(" ");
-  const txt2 = new TextRun("We therefore request you to send payment of the above overdue amount immediately to avoid escalation of the interest and late payment charges accruing at 1.083% and 5% every month respectively. ");
+  const txt5 = new TextRun("Your account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + letter_data.OUT_BALANCE + " and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.");
+  const ptxt5 = new Paragraph();
+  txt5.size(24);
+  ptxt5.addRun(txt5);
+  ptxt5.justified();
+  document.addParagraph(ptxt5);
+
+  document.createParagraph(" ");
+  const txt2 = new TextRun("We are now giving you notice that your personal information and credit account details will be disclosed to the Credit Reference Bureau, in accordance with the Banking Act and CRB regulations 2013. Be advised that any credit defaults will remain on your credit file for up to five years from the date of settlement. ");
   const ptxt2 = new Paragraph();
   txt2.size(24);
-  txt2.font("Garamond");
   ptxt2.addRun(txt2);
   ptxt2.justified();
   document.addParagraph(ptxt2);
 
-  document.createParagraph(" ");
-  const txt3 = new TextRun("If you have any query regarding the above amount or suspect that your payment has been delayed, please feel free to contact the undersigned. If payment has already been sent, please ignore this letter. ");
-  const ptxt3 = new Paragraph();
-  txt3.size(24);
-  txt3.font("Garamond");
-  ptxt3.addRun(txt3);
-  ptxt3.justified();
-  document.addParagraph(ptxt3);
-
-  document.createParagraph(" ");
-  const txt4 = new TextRun("Payment can be made via Mpesa Paybill No. 400200 Account No. CR " + letter_data.cardacct + " ");
-  const ptxt4 = new Paragraph();
-  txt4.size(24);
-  txt4.font("Garamond");
-  txt4.bold();
-  ptxt4.addRun(txt4);
-  document.addParagraph(ptxt4);
-
-  document.createParagraph(" ");
-  const txt5 = new TextRun("We appreciate the opportunity to serve you. ");
-  const ptxt5 = new Paragraph();
-  txt5.size(24);
-  txt5.font("Garamond");
-  ptxt5.addRun(txt5);
-  document.addParagraph(ptxt5);
-
-  document.createParagraph(" ");
-  const txt6 = new TextRun("Kindly provide us with your email address by replying through Cardcentre@co-opbank.co.ke to enable us serve you better. ");
-  const ptxt6 = new Paragraph();
-  txt6.size(24);
-  txt6.font("Garamond");
-  txt6.bold();
-  ptxt6.addRun(txt6);
-  ptxt6.justified();
-  document.addParagraph(ptxt6);
 
   document.createParagraph(" ");
   document.createParagraph("Yours sincerely, ");
@@ -225,18 +185,18 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "overdue.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "overdue.docx")
+        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.docx")
           .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'overdue.pdf', data);
+            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'suspension.pdf', data);
             res.json({
               result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "overdue.pdf",
-              filename: letter_data.acc + DATE + "overduecc.pdf"
+              message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf",
+              filename: letter_data.acc + DATE + "suspension.pdf"
             })
           }, error => {
             console.log('error ...', error)
@@ -248,11 +208,11 @@ router.post('/download', function (req, res) {
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'overdue.docx'));
+      // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'suspension.docx'));
       res.json({
         result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "overdue.docx",
-        filename: letter_data.cardacct + DATE + "overdue.docx"
+        message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.docx",
+        filename: letter_data.acc + DATE + "suspension.docx"
       })
     }
   }).catch((err) => {
