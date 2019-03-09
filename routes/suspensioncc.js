@@ -212,7 +212,7 @@ router.post('/download', function (req, res) {
       res.json({
         result: 'success',
         message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.docx",
-        filename: letter_data.acc + DATE + "suspension.docx"
+        filename: letter_data.cardacct + DATE + "suspension.docx"
       })
     }
   }).catch((err) => {

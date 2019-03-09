@@ -30,13 +30,6 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json());
 router.use(cors())
 
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
@@ -44,9 +37,7 @@ router.post('/download', function (req, res) {
     const INCLUDELOGO = req.body.showlogo;
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "isoDate");
-    //
-    // console.log(letter_data);
-    //
+
     const document = new Document();
     if (INCLUDELOGO == 'Y') {
         const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
@@ -81,7 +72,6 @@ router.post('/download', function (req, res) {
         });
     }
     // logo end
-    
 
     document.createParagraph("The Co-operative Bank of Kenya Limited").right();
     document.createParagraph("Co-operative Bank House").right();
@@ -109,84 +99,8 @@ router.post('/download', function (req, res) {
     pddate.addRun(ddate);
     document.addParagraph(pddate);
 
-    document.createParagraph(" ");
-    document.createParagraph(letter_data.custname);
-    document.createParagraph(letter_data.address);
-    document.createParagraph(letter_data.custname);
-    document.createParagraph(" ");
+    // 
 
-    document.createParagraph("Dear sir/madam ");
-    document.createParagraph(" ");
-
-    const headertext = new TextRun("RE: OUTSTANDING LIABILITIES A/C NO. " + letter_data.acc + " - " + letter_data.custname + " ");
-    const paragraphheadertext = new Paragraph();
-    headertext.bold();
-    headertext.underline();
-    paragraphheadertext.addRun(headertext);
-    document.addParagraph(paragraphheadertext);
-
-    document.createParagraph(" ");
-    document.createParagraph("We write to notify you that your account/s is currently in arrears/overdrawn. Kindly note that your current balance is as indicated below and it continues to accrue interest until payment is made in full. ");
-    document.createParagraph(" ");
-
-    document.createParagraph(" ");
-
-    const table = document.createTable(DATA.length + 2, 7);
-    /*float({
-      horizontalAnchor: TableAnchorType.MARGIN,
-      verticalAnchor: TableAnchorType.MARGIN,
-      relativeHorizontalPosition: RelativeHorizontalPosition.RIGHT,
-      relativeVerticalPosition: RelativeVerticalPosition.BOTTOM,
-  });*/
-    // table.setFixedWidthLayout();
-    // table.setWidth('45', WidthType.DXA);
-    table.getCell(0, 1).addContent(new Paragraph("Account no"));
-    table.getCell(0, 2).addContent(new Paragraph("Principal Loan"));
-    table.getCell(0, 3).addContent(new Paragraph("Outstanding Interest "));
-    table.getCell(0, 4).addContent(new Paragraph("Principal Arrears"));
-    table.getCell(0, 5).addContent(new Paragraph("Total Arrears"));
-    table.getCell(0, 6).addContent(
-        new Paragraph("Total Outstanding")
-    );
-    // table rows
-    for (i = 0; i < DATA.length; i++) {
-        row = i + 1
-        table.getCell(row, 1).addContent(new Paragraph(DATA[i].accnumber));
-        table.getCell(row, 2).addContent(new Paragraph(numeral(DATA[i].oustbalance).format('0,0.00')));
-        table.getCell(row, 3).addContent(new Paragraph(numeral(DATA[i].princarrears).format('0,0.00')));
-        table.getCell(row, 4).addContent(new Paragraph(numeral(DATA[i].intarrears).format('0,0.00')));
-        table.getCell(row, 5).addContent(new Paragraph(numeral(DATA[i].totalarrears).format('0,0.00')));
-        table.getCell(row, 6).addContent(new Paragraph(numeral(DATA[i].oustbalance + DATA[i].totalarrears).format('0,0.00')));
-    }
-
-    document.createParagraph(" ");
-
-    document.createParagraph(" ");
-    document.createParagraph("The purpose of this letter therefore is to DEMAND immediate payment for the amount in arrears. Kindly ensure that the same is paid within fourteen days (14) from the date hereof. ");
-
-
-    document.createParagraph(" ");
-    document.createParagraph("In the event that you require any clarification or information, you may contact the undersigned on Telephone number 0203276000/ 0711049000/0732106000. ");
-
-    document.createParagraph(" ");
-    document.createParagraph("Yours Faithfully, ");
-
-    document.createParagraph(" ");
-    document.createParagraph(letter_data.manager);
-    document.createParagraph("BRANCH MANAGER ");
-    document.createParagraph(letter_data.branchname + " BRANCH");
-
-    document.createParagraph(" ");
-
-    if (GURARANTORS) {
-        document.createParagraph("cc: ");
-
-        for (g = 0; g < GURARANTORS.length; g++) {
-            document.createParagraph(" ");
-            document.createParagraph(GURARANTORS[g].name);
-            document.createParagraph(GURARANTORS[g].address);
-        }
-    }
 
     document.createParagraph(" ");
     document.createParagraph("This letter is valid without a signature ");
@@ -231,6 +145,7 @@ router.post('/download', function (req, res) {
             message: 'Exception occured'
         });
     });
-});
+})
+
 
 module.exports = router;

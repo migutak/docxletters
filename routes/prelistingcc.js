@@ -305,7 +305,7 @@ router.post('/download', function (req, res) {
       res.json({
         result: 'success',
         message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.docx",
-        filename: letter_data.acc + DATE + "prelistingcc.docx"
+        filename: letter_data.cardacct + DATE + "prelistingcc.docx"
       })
     }
   }).catch((err) => {
