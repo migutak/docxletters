@@ -39,7 +39,7 @@ router.post('/download', function (req, res) {
     //
     //
     const document = new Document();
-    if (INCLUDELOGO == 'Y') {
+    if (INCLUDELOGO == true) {
         const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
             .size(16)
         const parafooter1 = new Paragraph()
