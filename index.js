@@ -23,7 +23,7 @@ var day90 = require('./routes/day90');
 app.use('/demand2', demand2);
 app.use('/demand1', demand1);
 app.use('/overduecc', overduecc);
-app.use('/suspensioncc', suspensioncc);
+app.use('/suspension', suspensioncc);
 app.use('/prelistingcc', prelistingcc);
 app.use('/prelisting', prelisting);
 app.use('/postlistingunsecured', postlistingunsecured);

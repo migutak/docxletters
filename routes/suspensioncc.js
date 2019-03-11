@@ -13,6 +13,7 @@ const cors = require('cors')
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
+const IMAGEPATH = data.imagePath;
 
 const { Document, Paragraph, Packer, TextRun } = docx;
 
@@ -53,7 +54,7 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    document.createImage(fs.readFileSync("./coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
@@ -164,7 +165,7 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   // sign
 
-  document.createImage(fs.readFileSync("./sign_rose.png"), 100, 70);
+  document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 70);
 
   //sign
   document.createParagraph(" ");

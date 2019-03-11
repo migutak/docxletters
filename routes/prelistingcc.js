@@ -13,6 +13,7 @@ var data = require('./data.js');
 const cors = require('cors')
 
 const LETTERS_DIR = data.filePath;
+const IMAGEPATH = data.imagePath;
 
 const {
   Document,
@@ -63,22 +64,7 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    /*document.createImage(fs.readFileSync("./coop.jpg"), 350, 60, {
-      floating: {
-        horizontalPosition: {
-          offset: 1000000,
-        },
-        verticalPosition: {
-          offset: 1014400,
-        },
-        margins: {
-          top: 0,
-          bottom: 201440,
-        },
-      },
-    });*/
-
-    document.createImage(fs.readFileSync("./coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         behindDocument: true,
         horizontalPosition: {
@@ -258,7 +244,7 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph("Yours sincerely, ");
   // sign
-  document.createImage(fs.readFileSync("./sign_rose.png"), 100, 50);
+  document.createImage(fs.readFileSync( IMAGEPATH + "sign_rose.png"), 100, 50);
   //sign
   const sign = new TextRun("ROSE KARAMBU ");
   const psign = new Paragraph();

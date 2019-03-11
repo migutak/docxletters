@@ -13,6 +13,7 @@ const cors = require('cors')
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
+const IMAGEPATH = data.imagePath;
 
 const {
     Document,
@@ -40,12 +41,12 @@ router.use(cors())
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-    const GURARANTORS = req.body.guarantors;
+    const GUARANTORS = req.body.guarantors;
     const INCLUDELOGO = req.body.showlogo;
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "isoDate");
     //
-    console.log(letter_data);
+    // console.log(letter_data);
     //
     const document = new Document();
     if (INCLUDELOGO == true) {
@@ -62,7 +63,7 @@ router.post('/download', function (req, res) {
 
         //logo start
 
-        document.createImage(fs.readFileSync("./coop.jpg"), 350, 60, {
+        document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
             floating: {
                 behindDocument: true,
                 horizontalPosition: {
@@ -111,8 +112,7 @@ router.post('/download', function (req, res) {
 
     document.createParagraph(" ");
     document.createParagraph(letter_data.custname);
-    document.createParagraph(letter_data.address);
-    document.createParagraph(letter_data.custname);
+    document.createParagraph(letter_data.address + '-' + letter_data.postcode);
     document.createParagraph(" ");
 
     document.createParagraph("Dear sir/madam ");
@@ -178,7 +178,7 @@ router.post('/download', function (req, res) {
 
     document.createParagraph(" ");
 
-    if (GURARANTORS) {
+    if (GUARANTORS.length>0) {
         document.createParagraph("cc: ");
 
         for (g = 0; g < GURARANTORS.length; g++) {
