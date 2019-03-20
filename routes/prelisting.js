@@ -42,11 +42,11 @@ router.post('/download', function (req, res) {
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
-  const DATE = dateFormat(new Date(), "isoDate");
+  const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
   //
   //
   const document = new Document();
-  if (INCLUDELOGO == true) {
+  
     const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
       .size(16)
     const parafooter1 = new Paragraph()
@@ -59,6 +59,7 @@ router.post('/download', function (req, res) {
     document.Footer.addParagraph(parafooter2);
 
     //logo start
+  if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
@@ -87,7 +88,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph("Our Ref: PRELISTING/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
+  const ddate = new TextRun(DATE);
   const pddate = new Paragraph();
   ddate.size(20);
   pddate.addRun(ddate);
@@ -144,11 +145,11 @@ router.post('/download', function (req, res) {
   for (i = 0; i < DATA.length; i++) {
     row = i + 1
     table.getCell(row, 1).addContent(new Paragraph(DATA[i].accnumber));
-    table.getCell(row, 2).addContent(new Paragraph(DATA[i].ccy +' '+ numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'));
-    table.getCell(row, 3).addContent(new Paragraph(DATA[i].ccy +' '+ numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
-    table.getCell(row, 4).addContent(new Paragraph(DATA[i].ccy +' '+ numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
-    table.getCell(row, 5).addContent(new Paragraph(DATA[i].ccy +' '+ numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
-    table.getCell(row, 6).addContent(new Paragraph(DATA[i].ccy +' '+ numeral(Math.abs(DATA[i].oustbalance + DATA[i].totalarrears)).format('0,0.00') + ' DR'));
+    table.getCell(row, 2).addContent(new Paragraph(DATA[i].ccy + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'));
+    table.getCell(row, 3).addContent(new Paragraph(DATA[i].ccy + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
+    table.getCell(row, 4).addContent(new Paragraph(DATA[i].ccy + ' ' + numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
+    table.getCell(row, 5).addContent(new Paragraph(DATA[i].ccy + ' ' + numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
+    table.getCell(row, 6).addContent(new Paragraph(DATA[i].ccy + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].totalarrears)).format('0,0.00') + ' DR'));
   }
 
   document.createParagraph(" ");
@@ -261,7 +262,13 @@ router.post('/download', function (req, res) {
   }
 
   document.createParagraph(" ");
-  document.createParagraph("This letter is valid without a signature ");
+  document.createParagraph(" ");
+  document.createParagraph(" ");
+  const bottom = new TextRun("This letter is electronically generated and is valid without a signature ");
+  const pbottom = new Paragraph();
+  bottom.italic()
+  pbottom.addRun(bottom);
+  document.addParagraph(pbottom);
 
   const packer = new Packer();
 

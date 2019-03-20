@@ -44,25 +44,25 @@ router.post('/download', function (req, res) {
     const GUARANTORS = req.body.guarantors;
     const INCLUDELOGO = req.body.showlogo;
     const DATA = req.body.accounts;
-    const DATE = dateFormat(new Date(), "isoDate");
+    const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
     //
     // console.log(letter_data);
     //
     const document = new Document();
+
+    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+        .size(16)
+    const parafooter1 = new Paragraph()
+    parafooter1.addRun(footer1).center();
+    document.Footer.addParagraph(parafooter1);
+    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+        .size(16)
+    const parafooter2 = new Paragraph()
+    parafooter1.addRun(footer2).center();
+    document.Footer.addParagraph(parafooter2);
+
+    //logo start
     if (INCLUDELOGO == true) {
-        const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
-            .size(16)
-        const parafooter1 = new Paragraph()
-        parafooter1.addRun(footer1).center();
-        document.Footer.addParagraph(parafooter1);
-        const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
-            .size(16)
-        const parafooter2 = new Paragraph()
-        parafooter1.addRun(footer2).center();
-        document.Footer.addParagraph(parafooter2);
-
-        //logo start
-
         document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
             floating: {
                 behindDocument: true,
@@ -82,7 +82,7 @@ router.post('/download', function (req, res) {
         });
     }
     // logo end
-    
+
 
     document.createParagraph("The Co-operative Bank of Kenya Limited").right();
     document.createParagraph("Co-operative Bank House").right();
@@ -96,7 +96,6 @@ router.post('/download', function (req, res) {
     const text = new TextRun(" ''Without Prejudice'' ")
     const paragraph = new Paragraph();
     text.bold();
-    // document.createParagraph(" ''Without Prejudice'' ").title().heading3();
     paragraph.addRun(text).center();
     document.addParagraph(paragraph);
 
@@ -104,7 +103,7 @@ router.post('/download', function (req, res) {
 
     document.createParagraph("Our Ref: DEMAND1/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
     document.createParagraph(" ");
-    const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
+    const ddate = new TextRun(DATE);
     const pddate = new Paragraph();
     ddate.size(20);
     pddate.addRun(ddate);
@@ -152,11 +151,11 @@ router.post('/download', function (req, res) {
     for (i = 0; i < DATA.length; i++) {
         row = i + 1
         table.getCell(row, 1).addContent(new Paragraph(DATA[i].accnumber));
-        table.getCell(row, 2).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00')+ ' DR'));
-        table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].princarrears)).format('0,0.00')+ ' DR'));
-        table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].intarrears)).format('0,0.00')+ ' DR'));
-        table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00')+ ' DR'));
-        table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].oustbalance + DATA[i].totalarrears)).format('0,0.00')+ ' DR'));
+        table.getCell(row, 2).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'));
+        table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
+        table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
+        table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
+        table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].totalarrears)).format('0,0.00') + ' DR'));
     }
 
     document.createParagraph(" ");
@@ -178,7 +177,7 @@ router.post('/download', function (req, res) {
 
     document.createParagraph(" ");
 
-    if (GUARANTORS.length>0) {
+    if (GUARANTORS.length > 0) {
         document.createParagraph("cc: ");
 
         for (g = 0; g < GUARANTORS.length; g++) {
@@ -189,7 +188,13 @@ router.post('/download', function (req, res) {
     }
 
     document.createParagraph(" ");
-    document.createParagraph("This letter is valid without a signature ");
+    document.createParagraph(" ");
+    document.createParagraph(" ");
+    const bottom = new TextRun("This letter is electronically generated and is valid without a signature ");
+    const pbottom = new Paragraph();
+    bottom.italic()
+    pbottom.addRun(bottom);
+    document.addParagraph(pbottom);
 
     const packer = new Packer();
 

@@ -15,7 +15,12 @@ var data = require('./data.js');
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
-const { Document, Paragraph, Packer, TextRun } = docx;
+const {
+  Document,
+  Paragraph,
+  Packer,
+  TextRun
+} = docx;
 
 router.use(bodyParser.urlencoded({
   extended: true
@@ -23,7 +28,7 @@ router.use(bodyParser.urlencoded({
 
 router.use(bodyParser.json());
 router.use(cors())
- 
+
 /*router.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -41,20 +46,20 @@ router.post('/download', function (req, res) {
   //
   //
   const document = new Document();
+
+  const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
   if (INCLUDELOGO == true) {
-    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
-
-    //logo start
-
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
@@ -120,13 +125,13 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your account number; "+letter_data.acc+" that is in arrears. You can make payments through account number "+letter_data.acc+" at any branch of Co-operative Bank.");
+  document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your account number; " + letter_data.acc + " that is in arrears. You can make payments through account number " + letter_data.acc + " at any branch of Co-operative Bank.");
   document.createParagraph(" ");
-  document.createParagraph("The outstanding liabilities stand at "+letter_data.accounts[0].currency +' '+ numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') +"DR as at " + DATE + " broken down as follows:-");
+  document.createParagraph("The outstanding liabilities stand at " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') + "DR as at " + DATE + " broken down as follows:-");
   document.createParagraph(" ");
 
-  document.createParagraph("Principle Loan                    "+letter_data.accounts[0].currency +' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') + ' DR');
-  document.createParagraph("Loan Arrears                      "+letter_data.accounts[0].currency +' '+ numeral(Math.abs(letter_data.accounts[0].totalarrears)).format('0,0.00') + ' DR');
+  document.createParagraph("Principle Loan                    " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') + ' DR');
+  document.createParagraph("Loan Arrears                      " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].totalarrears)).format('0,0.00') + ' DR');
   document.createParagraph(" ");
 
   document.createParagraph(" ");
@@ -141,7 +146,7 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph("Thus, in compliance to the law, and having borrowed with Co-operative Bank of Kenya Limited, we have forwarded your  ");
 
- 
+
 
   document.createParagraph(" ");
   //start crb
@@ -231,7 +236,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Officer-Remedial Management Department                                         Manager-Remedial Management Department");
 
 
-  if (GURARANTORS.length>0) {
+  if (GURARANTORS.length > 0) {
     document.createParagraph("cc: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
