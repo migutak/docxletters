@@ -64,17 +64,18 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync( IMAGEPATH + 'coop.jpg'), 350, 60, {
       floating: {
-        behindDocument: true,
         horizontalPosition: {
-          relative: HorizontalPositionRelativeFrom.LEFT_MARGIN,
-          align: HorizontalPositionAlign.RIGHT,
+          offset: 1000000,
         },
         verticalPosition: {
-          relative: VerticalPositionRelativeFrom.BOTTOM_MARGIN,
-          align: VerticalPositionAlign.TOP,
-        }
+          offset: 1014400,
+        },
+        margins: {
+          top: 0,
+          bottom: 201440,
+        },
       },
     });
   }
@@ -124,7 +125,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(pcity);
   document.createParagraph(" ");
 
-  const dear = new TextRun("Dear sir/madam ");
+  const dear = new TextRun("Dear Sir/Madam ");
   const pdear = new Paragraph();
   dear.size(20);
   pdear.addRun(dear);
@@ -155,7 +156,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt1);
 
   document.createParagraph(" ");
-  const txt2 = new TextRun("Please note that your card account number " + letter_data.cardacct + ", card number " + letter_data.cardnumber + " is currently in default. It is outstanding at " + letter_data.OUT_BALANCE + " with arrears of " + letter_data.EXP_PMNT + ", having not paid the full installment(s) for 60 days. This card debt continues to accrue interest at a rate of 1.083% per month, on the daily outstanding balance and late payment fees at the rate of 5% on the arrears amount plus an excess fee of Kshs.1,000.00 monthly (if the total balance is above the limit).");
+  const txt2 = new TextRun("Please note that your card account number " + letter_data.cardacct + ", card number " + letter_data.cardnumber + " is currently in default. It is outstanding at " + numeral(Math.abs(letter_data.OUT_BALANCE)).format('0,0.00') + " with arrears of " + numeral(Math.abs(letter_data.EXP_PMNT)).format('0,0.00') + ", having not paid the full installment(s) for 60 days. This card debt continues to accrue interest at a rate of 1.083% per month, on the daily outstanding balance and late payment fees at the rate of 5% on the arrears amount plus an excess fee of Kshs.1,000.00 monthly (if the total balance is above the limit).");
   const ptxt2 = new Paragraph();
   txt2.size(20);
   ptxt2.addRun(txt2);
@@ -177,58 +178,58 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   //start crb
-  const crb = new TextRun("TransUnion CRB                                                   Metropol CRB");
+  const crb = new TextRun("TransUnion CRB                                         Metropol CRB                                      Creditinfo CRB Kenya Ltd");
   const pcrb = new Paragraph();
-  crb.size(20);
+  crb.size(18);
   crb.bold();
   pcrb.addRun(crb);
   document.addParagraph(pcrb);
 
-  const crb1 = new TextRun("2nd Floor, Prosperity House,                                   1st Floor, Shelter Afrique Centre, Upper Hill, Nairobi. ");
+  const crb1 = new TextRun("Delta Corner Annex, Ring Road,	       1st Floor, Shelter Afrique Centre, 	       Park Suites, Office 12, Second Floor");
   const pcrb1 = new Paragraph();
-  crb1.size(20);
+  crb1.size(18);
   pcrb1.addRun(crb1);
   document.addParagraph(pcrb1);
 
-  const crb2 = new TextRun("Westlands Road, Off Museum Hill,                         P.O Box 35331 - 00200 ");
+  const crb2 = new TextRun("Westlands Lane, Nairobi. 	                       Upper Hill, Nairobi.  	                       Parklands Road, Nairobi.");
   const pcrb2 = new Paragraph();
-  crb2.size(20);
+  crb2.size(18);
   pcrb2.addRun(crb2);
   document.addParagraph(pcrb2);
 
-  const crb3 = new TextRun("Westlands, Nairobi. P.O. Box 46406, 00100           NAIROBI, KENYA. ");
+  const crb3 = new TextRun("P.O. Box 46406, 00100, NAIROBI, KENYA        P.O Box 35331–00200 NAIROBI. 	        P.O. Box 38941-00623, NAIROBI ");
   const pcrb3 = new Paragraph();
-  crb3.size(20);
+  crb3.size(16);
   pcrb3.addRun(crb3);
   document.addParagraph(pcrb3);
 
-  const crb4 = new TextRun("NAIROBI, KENYA Telephone: +254 (0) 20          Telephone: +254 (0) 20 2689881/27113575  ");
+  const crb4 = new TextRun("Tel: +254 (0) 20 51799/3751360/2/4/5         Tel: +254(0)20 2689881/27113575       Tel: 020 3757272  ");
   const pcrb4 = new Paragraph();
-  crb4.size(20);
+  crb4.size(18);
   pcrb4.addRun(crb4);
   document.addParagraph(pcrb4);
 
-  const crb5 = new TextRun("51799/3751360/2/4/5 Fax: +254 (0) 20 3751344    Fax: +254 (0) 20273572 ");
+  const crb5 = new TextRun("Fax:+254(0)20 3751344                                Fax: +254 (0) 20273572 ");
   const pcrb5 = new Paragraph();
-  crb5.size(20);
+  crb5.size(18);
   pcrb5.addRun(crb5);
   document.addParagraph(pcrb5);
 
-  const crb6 = new TextRun("Email: info@transunion.co.ke                                 Email: creditbureau@metropol.co.ke ");
+  const crb6 = new TextRun("Email: info@crbafrica.com	                       Email: creditbureau@metropol.co.ke    Email: cikinfo@creditinfo.co.ke");
   const pcrb6 = new Paragraph();
-  crb6.size(20);
+  crb6.size(18);
   pcrb6.addRun(crb6);
   document.addParagraph(pcrb6);
 
-  const crb9 = new TextRun("Website: www.crbafrica.com                                  www.metropolcorporation.com  ");
+  const crb9 = new TextRun("Website: www.crbafrica.com	                       Website: www.metropolcorporation.com  Website: ke.creditinfo.com ");
   const pcrb9 = new Paragraph();
-  crb9.size(20);
+  crb9.size(18);
   // crb9.underline();
   crb9.color("blue")
   pcrb9.addRun(crb9);
   document.addParagraph(pcrb9);
 
-  const crb7 = new TextRun("Please text your name to 21272 and                                                  ");
+  /*const crb7 = new TextRun("Please text your name to 21272 and                                                  ");
   const pcrb7 = new Paragraph();
   crb7.size(20);
   pcrb7.addRun(crb7);
@@ -238,7 +239,7 @@ router.post('/download', function (req, res) {
   const pcrb8 = new Paragraph();
   crb8.size(20);
   pcrb8.addRun(crb8);
-  document.addParagraph(pcrb8);
+  document.addParagraph(pcrb8);*/
   //
 
   document.createParagraph(" ");

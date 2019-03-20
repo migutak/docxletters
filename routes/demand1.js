@@ -115,7 +115,7 @@ router.post('/download', function (req, res) {
     document.createParagraph(letter_data.address + '-' + letter_data.postcode);
     document.createParagraph(" ");
 
-    document.createParagraph("Dear sir/madam ");
+    document.createParagraph("Dear Sir/Madam ");
     document.createParagraph(" ");
 
     const headertext = new TextRun("RE: OUTSTANDING LIABILITIES A/C NO. " + letter_data.acc + " - " + letter_data.custname + " ");
@@ -152,11 +152,11 @@ router.post('/download', function (req, res) {
     for (i = 0; i < DATA.length; i++) {
         row = i + 1
         table.getCell(row, 1).addContent(new Paragraph(DATA[i].accnumber));
-        table.getCell(row, 2).addContent(new Paragraph(numeral(DATA[i].oustbalance).format('0,0.00')));
-        table.getCell(row, 3).addContent(new Paragraph(numeral(DATA[i].princarrears).format('0,0.00')));
-        table.getCell(row, 4).addContent(new Paragraph(numeral(DATA[i].intarrears).format('0,0.00')));
-        table.getCell(row, 5).addContent(new Paragraph(numeral(DATA[i].totalarrears).format('0,0.00')));
-        table.getCell(row, 6).addContent(new Paragraph(numeral(DATA[i].oustbalance + DATA[i].totalarrears).format('0,0.00')));
+        table.getCell(row, 2).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00')+ ' DR'));
+        table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].princarrears)).format('0,0.00')+ ' DR'));
+        table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].intarrears)).format('0,0.00')+ ' DR'));
+        table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00')+ ' DR'));
+        table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].oustbalance + DATA[i].totalarrears)).format('0,0.00')+ ' DR'));
     }
 
     document.createParagraph(" ");
@@ -174,17 +174,17 @@ router.post('/download', function (req, res) {
     document.createParagraph(" ");
     document.createParagraph(letter_data.manager);
     document.createParagraph("BRANCH MANAGER ");
-    document.createParagraph(letter_data.branchname + " BRANCH");
+    document.createParagraph(letter_data.branchname);
 
     document.createParagraph(" ");
 
     if (GUARANTORS.length>0) {
         document.createParagraph("cc: ");
 
-        for (g = 0; g < GURARANTORS.length; g++) {
+        for (g = 0; g < GUARANTORS.length; g++) {
             document.createParagraph(" ");
-            document.createParagraph(GURARANTORS[g].name);
-            document.createParagraph(GURARANTORS[g].address);
+            document.createParagraph(GUARANTORS[g].name);
+            document.createParagraph(GUARANTORS[g].address);
         }
     }
 

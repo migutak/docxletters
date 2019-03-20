@@ -129,15 +129,10 @@ router.post('/download', function (req, res) {
   document.addParagraph(pcity);
   document.createParagraph(" ");
 
-  const txtdear = new TextRun("Dear sir/madam ");
-  const ptxtdear = new Paragraph();
-  txtdear.font("Garamond");
-  txtdear.size(28);
-  ptxtdear.addRun(txtdear);
-  document.addParagraph(ptxtdear);
+  document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: YOUR CARD ACCOUNT NUMBER: " + letter_data.cardacct);
+  const headertext = new TextRun("RE: OVERDUE CARD PAYMENT ACCOUNT NUMBER: " + letter_data.cardacct);
   const paragraphheadertext = new Paragraph();
   headertext.bold();
   headertext.font("Garamond");

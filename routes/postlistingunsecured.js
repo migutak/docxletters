@@ -105,10 +105,10 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   document.createParagraph(letter_data.custname);
-  document.createParagraph(letter_data.address);
+  document.createParagraph(letter_data.address + ' - ' + letter_data.postcode);
   document.createParagraph(" ");
 
-  document.createParagraph("Dear sir/madam ");
+  document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
   const headertext = new TextRun("REF: DEMAND FOR OUTSTANDING BALANCES AND NOTICE OF LISTING AT THE CREDIT REFERENCE BUREAU ISSUED PURSUANT TO REGULATION 50 (1)(b) OF THE CREDIT REFERENCE BUREAU REGULATIONS, 2013.");
@@ -122,11 +122,11 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your account number; "+letter_data.acc+" that is in arrears. You can make payments through account number "+letter_data.acc+" at any branch of Co-operative Bank.");
   document.createParagraph(" ");
-  document.createParagraph("The outstanding liabilities stand at Kshs. "+ letter_data.accounts[0].oustbalance+"Dr as at "+DATE+" broken down as follows:-");
+  document.createParagraph("The outstanding liabilities stand at "+letter_data.accounts[0].currency +' '+ numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') +"DR as at " + DATE + " broken down as follows:-");
   document.createParagraph(" ");
 
-  document.createParagraph("Principle Loan                    Kshs:  " + numeral(letter_data.accounts[0].oustbalance).format('0,0.00'));
-  document.createParagraph("Loan Arrears                       Kshs:  " + numeral(letter_data.accounts[0].totalarrears).format('0,0.00'));
+  document.createParagraph("Principle Loan                    "+letter_data.accounts[0].currency +' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') + ' DR');
+  document.createParagraph("Loan Arrears                      "+letter_data.accounts[0].currency +' '+ numeral(Math.abs(letter_data.accounts[0].totalarrears)).format('0,0.00') + ' DR');
   document.createParagraph(" ");
 
   document.createParagraph(" ");
@@ -145,52 +145,52 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   //start crb
-  const crb = new TextRun("TransUnion CRB                                                   Metropol CRB");
+  const crb = new TextRun("TransUnion CRB                                         Metropol CRB                                      Creditinfo CRB Kenya Ltd");
   const pcrb = new Paragraph();
-  crb.size(20);
+  crb.size(18);
   crb.bold();
   pcrb.addRun(crb);
   document.addParagraph(pcrb);
 
-  const crb1 = new TextRun("2nd Floor, Prosperity House,                                   1st Floor, Shelter Afrique Centre, Upper Hill, Nairobi. ");
+  const crb1 = new TextRun("Delta Corner Annex, Ring Road,	       1st Floor, Shelter Afrique Centre, 	       Park Suites, Office 12, Second Floor");
   const pcrb1 = new Paragraph();
-  crb1.size(20);
+  crb1.size(18);
   pcrb1.addRun(crb1);
   document.addParagraph(pcrb1);
 
-  const crb2 = new TextRun("Westlands Road, Off Museum Hill,                         P.O Box 35331 - 00200 ");
+  const crb2 = new TextRun("Westlands Lane, Nairobi. 	                       Upper Hill, Nairobi.  	                       Parklands Road, Nairobi.");
   const pcrb2 = new Paragraph();
-  crb2.size(20);
+  crb2.size(18);
   pcrb2.addRun(crb2);
   document.addParagraph(pcrb2);
 
-  const crb3 = new TextRun("Westlands, Nairobi. P.O. Box 46406, 00100           NAIROBI, KENYA. ");
+  const crb3 = new TextRun("P.O. Box 46406, 00100, NAIROBI, KENYA        P.O Box 35331–00200 NAIROBI. 	        P.O. Box 38941-00623, NAIROBI ");
   const pcrb3 = new Paragraph();
-  crb3.size(20);
+  crb3.size(16);
   pcrb3.addRun(crb3);
   document.addParagraph(pcrb3);
 
-  const crb4 = new TextRun("NAIROBI, KENYA Telephone: +254 (0) 20          Telephone: +254 (0) 20 2689881/27113575  ");
+  const crb4 = new TextRun("Tel: +254 (0) 20 51799/3751360/2/4/5         Tel: +254(0)20 2689881/27113575       Tel: 020 3757272  ");
   const pcrb4 = new Paragraph();
-  crb4.size(20);
+  crb4.size(18);
   pcrb4.addRun(crb4);
   document.addParagraph(pcrb4);
 
-  const crb5 = new TextRun("51799/3751360/2/4/5 Fax: +254 (0) 20 3751344    Fax: +254 (0) 20273572 ");
+  const crb5 = new TextRun("Fax:+254(0)20 3751344                                Fax: +254 (0) 20273572 ");
   const pcrb5 = new Paragraph();
-  crb5.size(20);
+  crb5.size(18);
   pcrb5.addRun(crb5);
   document.addParagraph(pcrb5);
 
-  const crb6 = new TextRun("Email: info@transunion.co.ke                                 Email: creditbureau@metropol.co.ke ");
+  const crb6 = new TextRun("Email: info@crbafrica.com	                       Email: creditbureau@metropol.co.ke    Email: cikinfo@creditinfo.co.ke");
   const pcrb6 = new Paragraph();
-  crb6.size(20);
+  crb6.size(18);
   pcrb6.addRun(crb6);
   document.addParagraph(pcrb6);
 
-  const crb9 = new TextRun("Website: www.crbafrica.com                                  www.metropolcorporation.com  ");
+  const crb9 = new TextRun("Website: www.crbafrica.com	                       Website: www.metropolcorporation.com  Website: ke.creditinfo.com ");
   const pcrb9 = new Paragraph();
-  crb9.size(20);
+  crb9.size(18);
   // crb9.underline();
   crb9.color("blue")
   pcrb9.addRun(crb9);

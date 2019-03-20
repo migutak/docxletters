@@ -117,7 +117,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paddress);
 
   document.createParagraph(" ");
-  document.createParagraph("Dear sir/madam ");
+  document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
   const headertext = new TextRun("RE: NOTIFICATION OF SALE OF PROPERTY L.R NO. xxxxxxxxxxxxxxxxx	");
@@ -131,7 +131,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("We refer to our notices dated xxxxxxxxxxxxx, xxxxxxxxxxxxxxx and xxxxxxxxxxxxxxxxxx");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("As you are fully aware and despite the notices mentioned above, you have not rectified the default and you owe the Bank the sum of Kes. "+letter_data.accounts[0].oustbalance+" dr as at "+DATE+" in respect of a facility granted to xx full particulars whereof are well within your knowledge. ");
+  const txt3 = new TextRun("As you are fully aware and despite the notices mentioned above, you have not rectified the default and you owe the Bank the sum of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+" dr as at "+DATE+" in respect of a facility granted to xx full particulars whereof are well within your knowledge. ");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -177,9 +177,6 @@ router.post('/download', function (req, res) {
       document.createParagraph(GURARANTORS[g].address);
     }
   }
-
-  document.createParagraph(" ");
-  document.createParagraph("This letter is valid without a signature ");
 
   const packer = new Packer();
 

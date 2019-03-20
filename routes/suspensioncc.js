@@ -125,7 +125,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
 
-  document.createParagraph("Dear sir/madam ");
+  document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
   const headertext = new TextRun("RE: CO-OPCARD ACCOUNT NO: " + letter_data.cardacct);
@@ -144,7 +144,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt);
 
   document.createParagraph(" ");
-  const txt5 = new TextRun("Your account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + letter_data.OUT_BALANCE + " and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.");
+  const txt5 = new TextRun("Your account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + numeral(Math.abs(letter_data.OUT_BALANCE)).format('0,0.00') + " and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.");
   const ptxt5 = new Paragraph();
   txt5.size(24);
   ptxt5.addRun(txt5);

@@ -117,7 +117,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paddress);
 
   document.createParagraph(" ");
-  document.createParagraph("Dear sir/madam ");
+  document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
   const headertext = new TextRun("RE: OUTSTANDING LIABILITIES DUE TO THE BANK ON ACCOUNT OF "+letter_data.acc+": BASE NO. xxxxxxxxx ");
@@ -131,7 +131,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("We refer to our notice dated xxxxxxxxxxx. ");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("As you are fully aware and despite the referenced notice, the above account is in arrears of Kes. xxxxxxx dr as at (Date) which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)) and late penalties of 0.5% per month and further the total outstanding sum due to the Bank as at (Date) is Kes. ……….. dr which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)).");
+  const txt3 = new TextRun("As you are fully aware and despite the referenced notice, the above account is in arrears of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+" dr as at (Date) which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)) and late penalties of 0.5% per month and further the total outstanding sum due to the Bank as at "+DATE+" is "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+". dr which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)).");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -144,7 +144,7 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
 
   
-  document.createParagraph("TAKE NOTICE that pursuant to the provisions of Section 90 of the Land Act, 2012, the Bank intends to take action and exercise remedies provided in this Section after the expiry of THREE (3) MONTHS from the date of service of this Notice upon yourself if you do not rectify the default by repaying the outstanding sum of Kes. xxxxxxxxxxxdr which includes the ");
+  document.createParagraph("TAKE NOTICE that pursuant to the provisions of Section 90 of the Land Act, 2012, the Bank intends to take action and exercise remedies provided in this Section after the expiry of THREE (3) MONTHS from the date of service of this Notice upon yourself if you do not rectify the default by repaying the outstanding sum of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+"dr which includes the ");
   document.createParagraph(" ");
   document.createParagraph("Please be advised that if you fail to remedy the default and repay the outstanding amount as stated above the Bank shall exercise any of the remedies as stipulated in Section 90 (3) of the Land Act, 2012 against you which includes:");
   document.createParagraph("File suit against you for money due and owing ");
@@ -174,9 +174,6 @@ router.post('/download', function (req, res) {
       document.createParagraph(GURARANTORS[g].address);
     }
   }
-
-  document.createParagraph(" ");
-  document.createParagraph("This letter is valid without a signature ");
 
   const packer = new Packer();
 

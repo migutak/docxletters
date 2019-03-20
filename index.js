@@ -32,7 +32,7 @@ app.use('/day40', day40);
 app.use('/day90', day90);
 
 router.get('/', function (req, res) {
-    res.json({ message: 'hooray! welcome to our rest video api!' }); 
+    res.json({ message: 'Demand letters ready!' }); 
   });
   
   app.use(bodyParser.json());

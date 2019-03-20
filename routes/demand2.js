@@ -39,7 +39,7 @@ router.use(cors())
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
+  const GUARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "isoDate");
@@ -97,7 +97,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph("Our Ref: DEMAND2/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
+  const ddate = new TextRun(dateFormat(new Date(), 'longDate'));
   const pddate = new Paragraph();
   ddate.size(20);
   pddate.addRun(ddate);
@@ -105,11 +105,10 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   document.createParagraph(letter_data.custname);
-  document.createParagraph(letter_data.address);
-  document.createParagraph(letter_data.custname);
+  document.createParagraph(letter_data.address + ' - '+ letter_data.postcode);
   document.createParagraph(" ");
 
-  document.createParagraph("Dear sir/madam ");
+  document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
   const headertext = new TextRun("RE: OUTSTANDING LIABILITIES A/C NO. " + letter_data.acc + " - " + letter_data.custname + " ");
@@ -120,7 +119,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  document.createParagraph("Following our 1st notice (dated), we note with concern that your account/s is/are still in arrears/overdrawn ");
+  document.createParagraph("Following our 1st notice "+dateFormat(letter_data.demand1date,'longDate')+", we note with concern that your account/s is/are still in arrears/overdrawn ");
   document.createParagraph("Kindly note that your current balance/s as indicated below and it/they continue/s to accrue interest until payment is made in full.  ");
   document.createParagraph(" ");
 
@@ -145,11 +144,11 @@ router.post('/download', function (req, res) {
   for (i = 0; i < DATA.length; i++) {
     row = i + 1
     table.getCell(row, 1).addContent(new Paragraph(DATA[i].accnumber));
-    table.getCell(row, 2).addContent(new Paragraph(numeral(DATA[i].oustbalance).format('0,0.00')));
-    table.getCell(row, 3).addContent(new Paragraph(numeral(DATA[i].princarrears).format('0,0.00')));
-    table.getCell(row, 4).addContent(new Paragraph(numeral(DATA[i].intarrears).format('0,0.00')));
-    table.getCell(row, 5).addContent(new Paragraph(numeral(DATA[i].totalarrears).format('0,0.00')));
-    table.getCell(row, 6).addContent(new Paragraph(numeral(DATA[i].oustbalance + DATA[i].totalarrears).format('0,0.00')));
+    table.getCell(row, 2).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00')+ ' DR'));
+    table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].princarrears)).format('0,0.00')+ ' DR'));
+    table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].intarrears)).format('0,0.00')+ ' DR'));
+    table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00')+ ' DR'));
+    table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency +' '+ numeral(Math.abs(DATA[i].oustbalance + DATA[i].totalarrears)).format('0,0.00')+ ' DR'));
   }
 
   document.createParagraph(" ");
@@ -188,16 +187,16 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph(letter_data.manager);
   document.createParagraph("BRANCH MANAGER ");
-  document.createParagraph(letter_data.branchname + " BRANCH");
+  document.createParagraph(letter_data.branchname);
 
 
-  if (GURARANTORS.length>0) {
+  if (GUARANTORS.length>0) {
     document.createParagraph("cc: ");
 
-    for (g = 0; g < GURARANTORS.length; g++) {
+    for (g = 0; g < GUARANTORS.length; g++) {
       document.createParagraph(" ");
-      document.createParagraph(GURARANTORS[g].name);
-      document.createParagraph(GURARANTORS[g].address);
+      document.createParagraph(GUARANTORS[g].name);
+      document.createParagraph(GUARANTORS[g].address);
     }
   }
 
