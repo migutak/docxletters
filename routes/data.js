@@ -1,6 +1,6 @@
 module.exports = {
     filePath: '/Users/kevinabongo/demands/',
-    imagePath: '/Users/kevinabongo/angular6/docxletters/routes/',
+    imagePath: '/Users/kevinabongo/projects/docxletters/routes/',
     // filePath: '/home/ecollectadmin/demandletters/'
     // imagePath: '/home/ecollectadmin/docxletters/routes/',
 }

@@ -41,7 +41,7 @@ router.post('/download', function (req, res) {
   //
   //
   const document = new Document();
-  if (INCLUDELOGO == true) {
+  
     const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
       .size(16)
     const parafooter1 = new Paragraph()
@@ -54,7 +54,7 @@ router.post('/download', function (req, res) {
     document.Footer.addParagraph(parafooter2);
 
     //logo start
-
+  if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
@@ -120,7 +120,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: OUTSTANDING LIABILITIES DUE TO THE BANK ON ACCOUNT OF "+letter_data.acc+": BASE NO. xxxxxxxxx ");
+  const headertext = new TextRun("RE: OUTSTANDING LIABILITIES DUE TO THE BANK ON ACCOUNT OF "+letter_data.acc+": BASE NO. " + letter_data.custnumber);
   const paragraphheadertext = new Paragraph();
   headertext.bold();
   headertext.underline();
@@ -140,33 +140,36 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   document.createParagraph("The liabilities are secured by way of a Legal charge over the properties: ");
-  document.createParagraph("L.R.NO. xxxxxxxxxxxxxxxx I.N.O xxxxxxxxxxxxxx")
+  document.createParagraph("L.R.NO. xxxxxxxxxxxxxxxx registered in the name of xxxxxxxxxxxx")
   document.createParagraph(" ");
 
   
   document.createParagraph("TAKE NOTICE that pursuant to the provisions of Section 90 of the Land Act, 2012, the Bank intends to take action and exercise remedies provided in this Section after the expiry of THREE (3) MONTHS from the date of service of this Notice upon yourself if you do not rectify the default by repaying the outstanding sum of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+"dr which includes the ");
   document.createParagraph(" ");
   document.createParagraph("Please be advised that if you fail to remedy the default and repay the outstanding amount as stated above the Bank shall exercise any of the remedies as stipulated in Section 90 (3) of the Land Act, 2012 against you which includes:");
-  document.createParagraph("File suit against you for money due and owing ");
-  document.createParagraph("Appoint a receiver of the income of the charged property ");
-  document.createParagraph("Lease or sublease the charged property ");
-  document.createParagraph("Enter into possession of the charged Property ");
-  document.createParagraph("Sell the charged property. ");
+  document.createParagraph("•	Files suit against you for money due and owing ");
+  document.createParagraph("•	Appoint a receiver of the income of the charged property ");
+  document.createParagraph("•	Lease or sublease the charged property ");
+  document.createParagraph("•	Enter into possession of the charged Property ");
+  document.createParagraph("•	Sell the charged property. ");
 
   document.createParagraph(" ");
   document.createParagraph("FURTHER NOTE that pursuant to the provisions of Sections 90(2) (e) and 103 of the Land Act, 2012, you are at liberty to apply to the Court for any relief that the Court may deem fit to grant against the Bank's remedies. ");
 
 
   document.createParagraph(" ");
+  document.createParagraph(" ");
   document.createParagraph("Yours Faithfully, ");
 
   document.createParagraph(" ");
-  document.createParagraph(letter_data.manager);
-  document.createParagraph("RELATIONSHIP OFFICER                                        HEAD - REMEDIAL MANAGEMENT");
+  document.createParagraph(" ");
+  document.createParagraph("                                                                                                    JOYCE MBINDA");
+  document.createParagraph(letter_data.arocode                                           +    "                                                                                     MANAGER REMEDIAL MANAGEMENT");
+  document.createParagraph("CREDIT MANAGEMENT DIVISION.                                    CREDIT MANAGEMENT DIVISION.");
 
 
   if (GURARANTORS.length>0) {
-    document.createParagraph("cc: ");
+    document.createParagraph("CC: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
       document.createParagraph(" ");

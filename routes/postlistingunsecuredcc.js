@@ -14,10 +14,6 @@ var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
-var beforedate = new Date();
-
-// add a day
-beforedate.setDate(beforedate.getDate() + 14);
 
 const {
   Document,
@@ -129,19 +125,11 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your account number; " + letter_data.acc + " that is in arrears. You can make payments through account number " + letter_data.acc + " at any branch of Co-operative Bank.");
+  document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your card number; " + letter_data.cardnumber + " that is in arrears of Kshs."+ letter_data.oustbalance +" and your card account has been referred to our Credit Management Division recovery section for debt collection.");
   document.createParagraph(" ");
-  document.createParagraph("The outstanding liabilities stand at " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') + "DR as at " + DATE + " broken down as follows:-");
+  document.createParagraph("Please note that interest and other bank carges continues to accrue at various Bank rates until the outstanding balance is paid in full. ");
   document.createParagraph(" ");
-
-  document.createParagraph("Principle Loan                    " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.00') + ' DR');
-  document.createParagraph("Loan Arrears                      " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].totalarrears)).format('0,0.00') + ' DR');
-  document.createParagraph(" ");
-
-  document.createParagraph(" ");
-  document.createParagraph("Please note that interest continues to accrue at various Bank rates until the outstanding balance is paid in full. ");
-  document.createParagraph(" ");
-  document.createParagraph("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before "+ dateFormat(beforedate, 'dd-mmm-yyyy'), +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;");
+  document.createParagraph("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before "+ dateFormat(new Date() + 14, 'dd-mmm-yyyy'), +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;");
   document.createParagraph("1.	Appoint an External Debt Collector. ");
   document.createParagraph("2.	File suit against you. ");
   document.createParagraph(" ");

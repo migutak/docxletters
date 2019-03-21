@@ -42,7 +42,7 @@ router.post('/download', function (req, res) {
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
-  const DATE = dateFormat(new Date(), "isoDate");
+  const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
   const document = new Document();
   if (INCLUDELOGO == true) {

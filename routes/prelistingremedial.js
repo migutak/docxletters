@@ -173,25 +173,7 @@ router.post('/download', function (req, res) {
     table.getCell(row, 8).addContent(new Paragraph('14%'));
   }
 
-  document.createParagraph(" ");
-  document.createParagraph("Please note that interest continues to accrue at various Bank rates until the outstanding balance is paid in full.. ");
-
-
-  document.createParagraph(" ");
-  const txt = new TextRun("Kindly also note that under the provisions of the Banking (Credit Reference Bureau) Regulations 2013, it is now a mandatory requirement in law that all financial institutions share positive and negative credit information while assessing customers credit worthiness, standing and capacity through duly licensed Credit Reference Bureaus (CRBs) for inclusion and maintenance in their database for purposes of sharing the said information..");
-  const ptxt = new Paragraph();
-  txt.size(20);
-  ptxt.addRun(txt);
-  ptxt.justified();
-  document.addParagraph(ptxt);
-
-  document.createParagraph(" ");
-  const txt2 = new TextRun("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before "+ dateFormat(new Date() + 14, "dd-mmm-yyyy") +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;.");
-  const ptxt2 = new Paragraph();
-  txt2.size(20);
-  ptxt2.addRun(txt2);
-  ptxt2.justified();
-  document.addParagraph(ptxt2);
+  
 
   document.createParagraph(" ");
   const txt3 = new TextRun("We hereby notify you that we will proceed to adversely list you with the CRBs if your loan (s) becomes non-performing. To avoid an adverse listing, you are advised to clear the outstanding arrears.  ");
@@ -264,12 +246,22 @@ router.post('/download', function (req, res) {
   //stop crb
 
   document.createParagraph(" ");
+  const txt2 = new TextRun("In need, please feel free to contact the undersigned at Credit Management Division, Co-operative House Building, and Mezzanine 2.Tel:020-3276122/0711049122/0732106122.");
+  const ptxt2 = new Paragraph();
+  txt2.size(18);
+  ptxt2.addRun(txt2);
+  ptxt2.justified();
+  document.addParagraph(ptxt2);
+
+  document.createParagraph(" ");
   document.createParagraph("Yours Faithfully, ");
 
   document.createParagraph(" ");
-  document.createParagraph(letter_data.manager);
-  document.createParagraph("BRANCH MANAGER ");
-  document.createParagraph(letter_data.branchname);
+  document.createParagraph(" ");
+  document.createParagraph("                                                                                                    JOYCE MBINDA");
+  document.createParagraph(letter_data.arocode                                           +    "                                                                                     MANAGER REMEDIAL MANAGEMENT");
+  document.createParagraph("CREDIT MANAGEMENT DIVISION.                                    CREDIT MANAGEMENT DIVISION.");
+
 
 
   if (GURARANTORS.length > 0) {
@@ -294,18 +286,18 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx")
+        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.docx")
           .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'prelisting.pdf', data);
+            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'prelistingremedial.pdf', data);
             res.json({
               result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.pdf",
-              filename: letter_data.acc + DATE + "prelisting.pdf"
+              message: LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.pdf",
+              filename: letter_data.acc + DATE + "prelistingremedial.pdf"
             })
           }, error => {
             console.log('error ...', error)
@@ -320,8 +312,8 @@ router.post('/download', function (req, res) {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'prelisting.docx'));
       res.json({
         result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx",
-        filename: letter_data.acc + DATE + "prelisting.docx"
+        message: LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.docx",
+        filename: letter_data.acc + DATE + "prelistingremedial.docx"
       })
     }
   }).catch((err) => {

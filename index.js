@@ -16,8 +16,11 @@ var prelistingcc = require('./routes/prelistingcc');
 var prelisting = require('./routes/prelisting');
 var postlistingsecured = require('./routes/postlistingsecured');
 var postlistingunsecured = require('./routes/postlistingunsecured');
+var postlistingunsecuredcc = require('./routes/postlistingunsecuredcc');
 var day40 = require('./routes/day40');
 var day90 = require('./routes/day90');
+var day30 = require('./routes/day30');
+var prelistingremedial = require('./routes/prelistingremedial');
 
 ////////
 app.use('/demand2', demand2);
@@ -27,9 +30,12 @@ app.use('/suspension', suspensioncc);
 app.use('/prelistingcc', prelistingcc);
 app.use('/prelisting', prelisting);
 app.use('/postlistingunsecured', postlistingunsecured);
+app.use('/postlistingunsecuredcc', postlistingunsecuredcc);
 app.use('/postlistingsecured', postlistingsecured);
 app.use('/day40', day40);
 app.use('/day90', day90);
+app.use('/day30', day30);
+app.use('/prelistingremedial', prelistingremedial);
 
 router.get('/', function (req, res) {
     res.json({ message: 'Demand letters ready!' }); 
