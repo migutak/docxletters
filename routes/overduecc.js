@@ -82,6 +82,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
   document.createParagraph(" ");
@@ -98,7 +99,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphref);
 
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
+  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy'));
   const pddate = new Paragraph();
   ddate.font("Garamond");
   ddate.size(28);
@@ -114,12 +115,19 @@ router.post('/download', function (req, res) {
   pname.addRun(name);
   document.addParagraph(pname);
 
-  const address = new TextRun(letter_data.address + '- ' + letter_data.rpcode);
+  const address = new TextRun(letter_data.address);
   const paddress = new Paragraph();
   address.font("Garamond");
   address.size(28);
   paddress.addRun(address);
   document.addParagraph(paddress);
+
+  const address1 = new TextRun(letter_data.rpcode);
+  const paddress1 = new Paragraph();
+  address1.font("Garamond");
+  address1.size(28);
+  paddress1.addRun(address1);
+  document.addParagraph(paddress1);
 
   const city = new TextRun(letter_data.city);
   const pcity = new Paragraph();
@@ -142,7 +150,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  const txt1 = new TextRun("We would like to draw your attention to your Co-op card account which is currently overdue. The total amount overdue is Kshs " + numeral(letter_data.EXP_PMNT).format('0,0.00') + " while your current outstanding balance is Kshs " + numeral(letter_data.OUT_BALANCE).format('0,0.00') + " ");
+  const txt1 = new TextRun("We would like to draw your attention to your Co-op card account which is currently overdue. The total amount overdue is Kshs " + numeral(Math.abs(letter_data.exp_pmnt)).format('0,0.00') + "DR while your current outstanding balance is Kshs " + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + "DR ");
   const ptxt1 = new Paragraph();
   txt1.size(24);
   txt1.font("Garamond");
@@ -232,7 +240,7 @@ router.post('/download', function (req, res) {
             res.json({
               result: 'success',
               message: LETTERS_DIR + letter_data.cardacct + DATE + "overdue.pdf",
-              filename: letter_data.acc + DATE + "overduecc.pdf"
+              filename: letter_data.cardacct + DATE + "overduecc.pdf"
             })
           }, error => {
             console.log('error ...', error)

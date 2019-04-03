@@ -83,6 +83,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
 
@@ -109,8 +110,19 @@ router.post('/download', function (req, res) {
   document.addParagraph(pcopy);
 
   document.createParagraph(" ");
-  document.createParagraph(letter_data.custname);
-  document.createParagraph(letter_data.address + '-' + letter_data.postcode);
+
+const nametext = new TextRun(letter_data.custname);
+    const pnametext = new Paragraph();
+    nametext.allCaps();
+    pnametext.addRun(nametext);
+    document.addParagraph(pnametext);
+
+    const addresstext = new TextRun(letter_data.address + '-' + letter_data.postcode);
+    const paddresstext = new Paragraph();
+    addresstext.allCaps();
+    paddresstext.addRun(addresstext);
+    document.addParagraph(paddresstext);
+
   document.createParagraph(" ");
 
   document.createParagraph("Dear Sir/Madam ");
@@ -269,7 +281,7 @@ router.post('/download', function (req, res) {
 
     for (g = 0; g < GURARANTORS.length; g++) {
       document.createParagraph(" ");
-      document.createParagraph(GURARANTORS[g].name);
+      document.createParagraph(GURARANTORS[g].guarantorname);
       document.createParagraph(GURARANTORS[g].address);
     }
   }

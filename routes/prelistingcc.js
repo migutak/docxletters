@@ -47,7 +47,7 @@ router.post('/download', function (req, res) {
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
-  const DATE = dateFormat(new Date(), "isoDate");
+  const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
   const document = new Document();
   if (INCLUDELOGO == true) {
@@ -87,6 +87,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
 
@@ -98,7 +99,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphref);
 
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
+  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy'));
   const pddate = new Paragraph();
   ddate.size(24);
   pddate.addRun(ddate);
@@ -156,7 +157,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt1);
 
   document.createParagraph(" ");
-  const txt2 = new TextRun("Please note that your card account number " + letter_data.cardacct + ", card number " + letter_data.cardnumber + " is currently in default. It is outstanding at " + numeral(Math.abs(letter_data.OUT_BALANCE)).format('0,0.00') + " with arrears of " + numeral(Math.abs(letter_data.EXP_PMNT)).format('0,0.00') + ", having not paid the full installment(s) for 60 days. This card debt continues to accrue interest at a rate of 1.083% per month, on the daily outstanding balance and late payment fees at the rate of 5% on the arrears amount plus an excess fee of Kshs.1,000.00 monthly (if the total balance is above the limit).");
+  const txt2 = new TextRun("Please note that your card account number " + letter_data.cardacct + ", card number " + letter_data.cardnumber + " is currently in default. It is outstanding at " + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + "DR with arrears of " + numeral(Math.abs(letter_data.exp_pmnt)).format('0,0.00') + "DR, having not paid the full installment(s) for 60 days. This card debt continues to accrue interest at a rate of 1.083% per month, on the daily outstanding balance and late payment fees at the rate of 5% on the arrears amount plus an excess fee of Kshs.1,000.00 monthly (if the total balance is above the limit).");
   const ptxt2 = new Paragraph();
   txt2.size(20);
   ptxt2.addRun(txt2);
@@ -276,7 +277,7 @@ router.post('/download', function (req, res) {
             res.json({
               result: 'success',
               message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf",
-              filename: letter_data.acc + DATE + "prelistingcc.pdf"
+              filename: letter_data.cardacct + DATE + "prelistingcc.pdf"
             })
           }, error => {
             console.log('error ...', error)

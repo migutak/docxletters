@@ -23,8 +23,8 @@ var day30 = require('./routes/day30');
 var prelistingremedial = require('./routes/prelistingremedial');
 
 ////////
-app.use('/demand2', demand2);
-app.use('/demand1', demand1);
+app.use('/Demand2', demand2);
+app.use('/Demand1', demand1);
 app.use('/overduecc', overduecc);
 app.use('/suspension', suspensioncc);
 app.use('/prelistingcc', prelistingcc);

@@ -90,6 +90,7 @@ router.post('/download', function (req, res) {
     document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
     document.createParagraph("Tel: (020) 3276100").right();
     document.createParagraph("Fax: (020) 2227747/2219831").right();
+    document.createParagraph("Website: www.co-opbank.co.ke").right();
 
     document.createParagraph(" ");
 
@@ -110,8 +111,19 @@ router.post('/download', function (req, res) {
     document.addParagraph(pddate);
 
     document.createParagraph(" ");
-    document.createParagraph(letter_data.custname);
-    document.createParagraph(letter_data.address + '-' + letter_data.postcode);
+
+    const nametext = new TextRun(letter_data.custname);
+    const pnametext = new Paragraph();
+    nametext.allCaps();
+    pnametext.addRun(nametext);
+    document.addParagraph(pnametext);
+
+    const addresstext = new TextRun(letter_data.address + '-' + letter_data.postcode);
+    const paddresstext = new Paragraph();
+    addresstext.allCaps();
+    paddresstext.addRun(addresstext);
+    document.addParagraph(paddresstext);
+
     document.createParagraph(" ");
 
     document.createParagraph("Dear Sir/Madam ");
@@ -131,14 +143,6 @@ router.post('/download', function (req, res) {
     document.createParagraph(" ");
 
     const table = document.createTable(DATA.length + 2, 7);
-    /*float({
-      horizontalAnchor: TableAnchorType.MARGIN,
-      verticalAnchor: TableAnchorType.MARGIN,
-      relativeHorizontalPosition: RelativeHorizontalPosition.RIGHT,
-      relativeVerticalPosition: RelativeVerticalPosition.BOTTOM,
-  });*/
-    // table.setFixedWidthLayout();
-    // table.setWidth('45', WidthType.DXA);
     table.getCell(0, 1).addContent(new Paragraph("Account no"));
     table.getCell(0, 2).addContent(new Paragraph("Principal Loan"));
     table.getCell(0, 3).addContent(new Paragraph("Outstanding Interest "));
@@ -178,11 +182,11 @@ router.post('/download', function (req, res) {
     document.createParagraph(" ");
 
     if (GUARANTORS.length > 0) {
-        document.createParagraph("cc: ");
+        document.createParagraph("CC: ");
 
         for (g = 0; g < GUARANTORS.length; g++) {
             document.createParagraph(" ");
-            document.createParagraph(GUARANTORS[g].name);
+            document.createParagraph(GUARANTORS[g].guarantorname);
             document.createParagraph(GUARANTORS[g].address);
         }
     }

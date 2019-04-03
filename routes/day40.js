@@ -78,6 +78,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
 
@@ -131,7 +132,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("We refer to our notices dated xxxxxxxxxxxxx, xxxxxxxxxxxxxxx and xxxxxxxxxxxxxxxxxx");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("As you are fully aware and despite the notices mentioned above, you have not rectified the default and you owe the Bank the sum of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+" DR as at "+DATE+" in respect of a facility granted to xx full particulars whereof are well within your knowledge. ");
+  const txt3 = new TextRun("As you are fully aware and despite the notices mentioned above, you have not rectified the default and you owe the Bank the sum of "+letter_data.accounts[0].currency +' '+numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0')+"DR as at "+DATE+" in respect of a facility granted to "+letter_data.custname+", full particulars whereof are well within your knowledge. ");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -139,7 +140,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt3);
 
   document.createParagraph(" ");
-  document.createParagraph("The said facility is secured by inter alia, a legal charge over L.R NO. xx registered in the name of xx.");
+  document.createParagraph("The said facility is secured by inter alia, a legal charge over L.R NO. xx registered in the name of xxxxxx.");
   document.createParagraph(" ");
 
   const note1 = new TextRun("TAKE NOTICE");
@@ -173,7 +174,7 @@ router.post('/download', function (req, res) {
 
     for (g = 0; g < GURARANTORS.length; g++) {
       document.createParagraph(" ");
-      document.createParagraph(GURARANTORS[g].name);
+      document.createParagraph(GURARANTORS[g].guarantorname);
       document.createParagraph(GURARANTORS[g].address);
     }
   }
@@ -204,7 +205,7 @@ router.post('/download', function (req, res) {
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'day40.docx'));
+      //
       res.json({
         result: 'success',
         message: LETTERS_DIR + letter_data.acc + DATE + "day40.docx",

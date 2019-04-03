@@ -83,6 +83,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
 

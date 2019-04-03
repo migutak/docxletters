@@ -83,7 +83,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
-
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
   document.createParagraph(" ");
 
   document.createParagraph("Our Ref: PRELISTING/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
@@ -110,7 +110,8 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   document.createParagraph(letter_data.custname);
-  document.createParagraph(letter_data.address + '-' + letter_data.postcode);
+  document.createParagraph(letter_data.address);
+  document.createParagraph(letter_data.postcode);
   document.createParagraph(" ");
 
   document.createParagraph("Dear Sir/Madam ");
@@ -277,7 +278,7 @@ router.post('/download', function (req, res) {
 
     for (g = 0; g < GURARANTORS.length; g++) {
       document.createParagraph(" ");
-      document.createParagraph(GURARANTORS[g].name);
+      document.createParagraph(GURARANTORS[g].guarantorname);
       document.createParagraph(GURARANTORS[g].address);
     }
   }
@@ -294,17 +295,17 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "prelisting.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx")
+        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "prelisting.docx")
           .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'prelisting.pdf', data);
+            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'prelisting.pdf', data);
             res.json({
               result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.pdf",
+              message: LETTERS_DIR + letter_data.acc + DATE + "prelisting.pdf",
               filename: letter_data.acc + DATE + "prelisting.pdf"
             })
           }, error => {
@@ -320,7 +321,7 @@ router.post('/download', function (req, res) {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'prelisting.docx'));
       res.json({
         result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx",
+        message: LETTERS_DIR + letter_data.acc + DATE + "prelisting.docx",
         filename: letter_data.acc + DATE + "prelisting.docx"
       })
     }
