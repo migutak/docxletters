@@ -37,7 +37,7 @@ router.post('/download', function (req, res) {
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
-  const DATE = dateFormat(new Date(), "isoDate");
+  const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
   //
   //
   const document = new Document();
@@ -78,6 +78,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
 
@@ -173,7 +174,7 @@ router.post('/download', function (req, res) {
 
     for (g = 0; g < GURARANTORS.length; g++) {
       document.createParagraph(" ");
-      document.createParagraph(GURARANTORS[g].name);
+      document.createParagraph(GURARANTORS[g].guarantorname);
       document.createParagraph(GURARANTORS[g].address);
     }
   }

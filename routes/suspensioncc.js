@@ -77,6 +77,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
   document.createParagraph(" ");
@@ -95,7 +96,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphref);
 
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
+  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy'));
   const pddate = new Paragraph();
   ddate.font("Garamond");
   ddate.size(28);
@@ -110,11 +111,18 @@ router.post('/download', function (req, res) {
   pname.addRun(name);
   document.addParagraph(pname);
 
-  const address = new TextRun(letter_data.address + '- ' + letter_data.rpcode);
+  const address = new TextRun(letter_data.address);
   const paddress = new Paragraph();
   address.size(28);
   paddress.addRun(address);
   document.addParagraph(paddress);
+
+  const address1 = new TextRun(letter_data.rpcode);
+  const paddress1 = new Paragraph();
+  address1.size(28);
+  paddress1.addRun(address1);
+  document.addParagraph(paddress1);
+
 
   const city = new TextRun(letter_data.city);
   const pcity = new Paragraph();
@@ -144,7 +152,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt);
 
   document.createParagraph(" ");
-  const txt5 = new TextRun("Your account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + numeral(Math.abs(letter_data.OUT_BALANCE)).format('0,0.00') + " and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.");
+  const txt5 = new TextRun("Your account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + "DR and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.");
   const ptxt5 = new Paragraph();
   txt5.size(24);
   ptxt5.addRun(txt5);
@@ -197,7 +205,7 @@ router.post('/download', function (req, res) {
             res.json({
               result: 'success',
               message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf",
-              filename: letter_data.acc + DATE + "suspension.pdf"
+              filename: letter_data.cardacct + DATE + "suspension.pdf"
             })
           }, error => {
             console.log('error ...', error)

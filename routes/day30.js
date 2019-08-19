@@ -78,10 +78,11 @@ router.post('/download', function (req, res) {
   document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
   document.createParagraph("Tel: (020) 3276100").right();
   document.createParagraph("Fax: (020) 2227747/2219831").right();
+  document.createParagraph("Website: www.co-opbank.co.ke").right();
 
   document.createParagraph(" ");
 
-  document.createParagraph("Our Ref: DAY40/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
+  document.createParagraph("Our Ref: DAY30/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
   document.createParagraph(" ");
   const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy' ));
   const pddate = new Paragraph();
@@ -120,7 +121,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: DEMAND FOR OUTSTANDING BALANCES DUE ON LOAN FACILITIES ON ACCOUNT	" + letter_data.custname + " NO. " + letter_data.custnumber + " AND DEFAULT LISTING NOTIFICATION ISSUED PURSUANT TO REGULATION 50(1)(b) OF THE BANKING (CRB) REGULATIONS, 2013");
+  const headertext = new TextRun("RE: DEMAND FOR OUTSTANDING BALANCES DUE ON LOAN FACILITIES ON ACCOUNT	" + letter_data.custname + " NO. " + letter_data.cust + " AND DEFAULT LISTING NOTIFICATION ISSUED PURSUANT TO REGULATION 50(1)(b) OF THE BANKING (CRB) REGULATIONS, 2013");
   const paragraphheadertext = new Paragraph();
   headertext.bold();
   headertext.underline();
@@ -131,7 +132,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("The above matter refers.");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("We wish to notify you have breached terms of the letters of offer by defaulting in repaying your monthly repayments and as such your account is in arrears of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+" DR as at "+DATE+" which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum. Further, you owe the Bank the total sum of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+" DR as at "+DATE+" being the outstanding amount on the facility, which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum) until full payment, full particulars whereof are well within your knowledge. ");
+  const txt3 = new TextRun("We wish to notify you have breached terms of the letters of offer by defaulting in repaying your monthly repayments and as such your account is in arrears of "+letter_data.accounts[0].currency +' '+numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0')+"DR as at "+DATE+" which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum. Further, you owe the Bank the total sum of "+letter_data.accounts[0].currency +' '+numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0')+"DR as at "+DATE+" being the outstanding amount on the facility, which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum) until full payment, full particulars whereof are well within your knowledge. ");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -139,7 +140,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt3);
 
   document.createParagraph(" ");
-  document.createParagraph("Please note that if full payment of the outstanding amount is not made withing the next Thirty (30) days from the date of this letter, then we shall take the necessary action to protect the Bank's interest at your own risk as to costs");
+  document.createParagraph("Please note that if full payment of the outstanding amount is not made within the next Thirty (30) days from the date of this letter, then we shall take the necessary action to protect the Bank's interest at your own risk as to costs");
   document.createParagraph(" ");
 
   
@@ -180,7 +181,7 @@ router.post('/download', function (req, res) {
   pcrb4.addRun(crb4);
   document.addParagraph(pcrb4);
 
-  const crb5 = new TextRun("Fax:+254(0)20 3751344                                Fax: +254 (0) 20273572 ");
+  const crb5 = new TextRun("Fax: +254(0)20 3751344                                Fax: +254 (0) 20273572 ");
   const pcrb5 = new Paragraph();
   crb5.size(18);
   pcrb5.addRun(crb5);
@@ -209,13 +210,13 @@ router.post('/download', function (req, res) {
   ptxt.justified();
   document.addParagraph(ptxt);
 
-  const txt4 = new TextRun("•	To ensure that your loan payments are always up-to date and ");
+  const txt4 = new TextRun("• To ensure that your loan payments are always up-to date and ");
   const ptxt4 = new Paragraph();
   txt4.size(18);
   ptxt4.addRun(txt4);
   document.addParagraph(ptxt4);
 
-  const txt5 = new TextRun("•	Regularly obtain your credit report from the bureaus above to ascertain the accuracy of your information. ");
+  const txt5 = new TextRun("• Regularly obtain your credit report from the bureaus above to ascertain the accuracy of your information. ");
   const ptxt5 = new Paragraph();
   txt5.size(18);
   ptxt5.addRun(txt5);
