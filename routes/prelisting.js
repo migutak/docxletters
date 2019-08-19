@@ -8,7 +8,8 @@ var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
-const cors = require('cors')
+const cors = require('cors');
+var client = require('scp2');
 
 var data = require('./data.js');
 
@@ -27,15 +28,7 @@ router.use(bodyParser.urlencoded({
 }));
 
 router.use(bodyParser.json());
-router.use(cors())
-
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
@@ -45,6 +38,13 @@ router.post('/download', function (req, res) {
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
   //
   //
+  const rawaccnumber = letter_data.acc;
+  const memo = rawaccnumber.substr(2,3);
+  const first4 = rawaccnumber.substring(0,9);
+  const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
+
+  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g,"*");
+  accnumber_masked = first4 + '*****';
   const document = new Document();
   
     const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
@@ -151,22 +151,16 @@ router.post('/download', function (req, res) {
   table.getCell(0, 3).addContent(new Paragraph("Accrued Interest on principal"));
   table.getCell(0, 4).addContent(new Paragraph("Principal Arrears"));
   table.getCell(0, 5).addContent(new Paragraph("Interest in Arrears"));
-  table.getCell(0, 6).addContent(
-    new Paragraph("Penalty Interest")
-  );
-  table.getCell(0, 7).addContent(
-    new Paragraph("Days in arrears")
-  );
-  table.getCell(0, 8).addContent(
-    new Paragraph("Interest Rate per annum")
-  );
+  table.getCell(0, 6).addContent(new Paragraph("Penalty Interest"));
+  table.getCell(0, 7).addContent(new Paragraph("Days in arrears"));
+  table.getCell(0, 8).addContent(new Paragraph("Interest Rate per annum"));
   // table rows
   for (i = 0; i < DATA.length; i++) {
     row = i + 1
     table.getCell(row, 1).addContent(new Paragraph(DATA[i].accnumber));
     table.getCell(row, 2).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'));
-    table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
-    table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
+    table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
+    table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency +  ' 0.00'));
     table.getCell(row, 7).addContent(new Paragraph('Over 60 days'));
@@ -294,36 +288,77 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'prelisting.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.pdf",
-              filename: letter_data.acc + DATE + "prelisting.pdf"
-            })
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+          word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx"))
+              .then(data => {
+                  fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'prelisting.pdf', data);
+                  
+                  // pipe to remote
+                  client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf", {
+                      host: '172.16.204.71',
+                      username: 'vomwega',
+                      password: 'Stkenya.123',
+                      path: '/tmp/demandletters/'
+                  }, function(err) {
+                      if (err) {
+                          console.log(err);
+                          res.json({
+                              result: 'error',
+                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
+                              filename: accnumber_masked + DATE + "prelisting.pdf",
+                              piped: false
+                          })
+                      } else {
+                          console.log('file moved!');
+                          res.json({
+                              result: 'success',
+                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
+                              filename: accnumber_masked + DATE + "prelisting.pdf",
+                              piped: true
+                          })
+                      }
+                  })
+
+              }, error => {
+                  console.log('error ...', error)
+                  res.json({
+                      result: 'error',
+                      message: 'Exception occured'
+                  });
+              })
       }
       convert();
-    } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'prelisting.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "prelisting.docx",
-        filename: letter_data.acc + DATE + "prelisting.docx"
+  } else {
+      // pipe to remote
+      client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx", {
+          host: '172.16.204.71',
+          username: 'vomwega',
+          password: 'Stkenya.123',
+          path: '/tmp/demandletters/'
+      }, function(err) {
+          if (err) {
+              console.log(err);
+              res.json({
+                  result: 'error',
+                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.docx",
+                  filename: accnumber_masked + DATE + "prelisting.docx",
+                  piped: false
+              })
+          } else {
+              console.log('file moved!');
+              res.json({
+                  result: 'success',
+                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.docx",
+                  filename: accnumber_masked + DATE + "prelisting.docx",
+                  piped: true
+              })
+          }
       })
-    }
+  }
   }).catch((err) => {
     console.log(err);
     res.json({

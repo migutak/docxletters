@@ -8,7 +8,8 @@ var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
-const cors = require('cors')
+const cors = require('cors');
+var client = require('scp2');
 
 var data = require('./data.js');
 
@@ -27,15 +28,7 @@ router.use(bodyParser.urlencoded({
 }));
 
 router.use(bodyParser.json());
-router.use(cors())
-
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
@@ -45,6 +38,13 @@ router.post('/download', function (req, res) {
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
   //
   //
+  const rawaccnumber = letter_data.acc;
+  const memo = rawaccnumber.substr(2,3);
+  const first4 = rawaccnumber.substring(0,9);
+  const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
+
+  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g,"*");
+  accnumber_masked = first4 + '*****';
   const document = new Document();
   
     const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
@@ -213,36 +213,90 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "demand2.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + "demand2.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "demand2.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'demand2.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.acc + DATE + "demand2.pdf",
-              filename: letter_data.acc + DATE + "demand2.pdf"
-            })
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+          word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "demand2.docx"))
+              .then(data => {
+                  fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'demand2.pdf', data);
+                  
+                  // pipe to remote
+                 /* client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf", {
+                      host: '172.16.204.71',
+                      username: 'vomwega',
+                      password: 'Stkenya.123',
+                      path: '/tmp/demandletters/'
+                  }, function(err) {
+                      if (err) {
+                          console.log(err);
+                          res.json({
+                              result: 'error',
+                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.pdf",
+                              filename: accnumber_masked + DATE + "demand2.pdf",
+                              piped: false
+                          })
+                      } else {
+                          console.log('file moved!');
+                          res.json({
+                              result: 'success',
+                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.pdf",
+                              filename: accnumber_masked + DATE + "demand2.pdf",
+                              piped: true
+                          })
+                      }
+                  })*/
+
+                  res.json({
+                    result: 'success',
+                    message:  LETTERS_DIR + letter_data.acc + DATE + "demand2.pdf",
+                    filename: letter_data.acc + DATE + "demand2.pdf",
+                    piped: true
+                })
+
+              }, error => {
+                  console.log('error ...', error)
+                  res.json({
+                      result: 'error',
+                      message: 'Exception occured'
+                  });
+              })
       }
       convert();
-    } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'prelistingcc.docx'));
+  } else {
+      // pipe to remote
+      /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand2.docx", {
+          host: '172.16.204.71',
+          username: 'vomwega',
+          password: 'Stkenya.123',
+          path: '/tmp/demandletters/'
+      }, function(err) {
+          if (err) {
+              console.log(err);
+              res.json({
+                  result: 'error',
+                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.docx",
+                  filename: accnumber_masked + DATE + "demand2.docx",
+                  piped: false
+              })
+          } else {
+              console.log('file moved!');
+              res.json({
+                  result: 'success',
+                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.docx",
+                  filename: accnumber_masked + DATE + "demand2.docx",
+                  piped: true
+              })
+          }
+      })*/
       res.json({
         result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "demand2.docx",
-        filename: letter_data.acc + DATE + "demand2.docx"
-      })
-    }
+        message:  LETTERS_DIR + letter_data.acc + DATE + "demand2.docx",
+        filename: letter_data.acc + DATE + "demand2.docx",
+        piped: true
+    })
+  }
   }).catch((err) => {
     console.log(err);
     res.json({

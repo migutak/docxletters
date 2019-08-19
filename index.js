@@ -23,22 +23,22 @@ var day30 = require('./routes/day30');
 var prelistingremedial = require('./routes/prelistingremedial');
 
 ////////
-app.use('/demand2', demand2);
-app.use('/demand1', demand1);
-app.use('/overduecc', overduecc);
-app.use('/suspension', suspensioncc);
-app.use('/prelistingcc', prelistingcc);
-app.use('/prelisting', prelisting);
-app.use('/postlistingunsecured', postlistingunsecured);
-app.use('/postlistingunsecuredcc', postlistingunsecuredcc);
-app.use('/postlistingsecured', postlistingsecured);
-app.use('/day40', day40);
-app.use('/day90', day90);
-app.use('/day30', day30);
-app.use('/prelistingremedial', prelistingremedial);
+app.use('/docx/demand2', demand2);
+app.use('/docx/demand1', demand1);
+app.use('/docx/overduecc', overduecc);
+app.use('/docx/suspension', suspensioncc);
+app.use('/docx/prelistingcc', prelistingcc);
+app.use('/docx/prelisting', prelisting);
+app.use('/docx/postlistingunsecured', postlistingunsecured);
+app.use('/docx/postlistingunsecuredcc', postlistingunsecuredcc);
+app.use('/docx/postlistingsecured', postlistingsecured);
+app.use('/docx/day40', day40);
+app.use('/docx/day90', day90);
+app.use('/docx/day30', day30);
+app.use('/docx/prelistingremedial', prelistingremedial);
 
 router.get('/', function (req, res) {
-    res.json({ message: 'Demand letters ready!' }); 
+    res.json({ message: 'Demand letters ready Home!' }); 
   });
   
   app.use(bodyParser.json());
@@ -47,7 +47,7 @@ router.get('/', function (req, res) {
 
 
   //add the router
-app.use('/', router);
+app.use('/docx', router);
 app.listen(process.env.port || 8004);
 
 console.log('Running at Port 8004');
