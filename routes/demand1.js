@@ -54,7 +54,7 @@ router.post('/download', function (req, res) {
     const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
 
     const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g, "*");
-    accnumber_masked = first4 + '*****';
+    accnumber_masked = first4 + 'xxxxx';
     //
     if (memo == '6D0' || memo == '6E2' || memo == '6E3') {
         NOTICE = 'seven days (7)';
@@ -212,15 +212,15 @@ router.post('/download', function (req, res) {
     const packer = new Packer();
 
     packer.toBuffer(document).then((buffer) => {
-        fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "demand1.docx", buffer);
+        fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", buffer);
 
         //conver to pdf
         // if pdf format
         if (letter_data.format == 'pdf') {
             const convert = () => {
-               word2pdf.word2pdf(path.join(LETTERS_DIR + letter_data.acc + DATE + "demand1.docx"))
+               word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx"))
                     .then(data => {
-                        fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'demand1.pdf', data);
+                        fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'demand1.pdf', data);
                         
                         // pipe to remote
                         /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf", {
@@ -250,8 +250,8 @@ router.post('/download', function (req, res) {
 
                         res.json({
                             result: 'success',
-                            message:  LETTERS_DIR + letter_data.acc + DATE + "demand1.pdf",
-                            filename: letter_data.acc + DATE + "demand1.pdf",
+                            message:  LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
+                            filename: accnumber_masked + DATE + "demand1.pdf",
                             piped: true
                         })
 
@@ -293,8 +293,8 @@ router.post('/download', function (req, res) {
 
             res.json({
                 result: 'success',
-                message:  LETTERS_DIR + letter_data.acc + DATE + "demand1.docx",
-                filename: letter_data.acc + DATE + "demand1.docx",
+                message:  LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
+                filename: accnumber_masked + DATE + "demand1.docx",
                 piped: true
             });
         }
