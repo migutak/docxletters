@@ -8,7 +8,6 @@
 }*/
 
 module.exports = {
-    filePath        : process.env.FILEPATH || "C:\\demands\\",
-    imagePath       : process.env.IMAGEPATH || 'C:\\Users\\Kevin\\Documents\\angular2\\docxletters\\routes\\',
-    pipeUrl         : process.env.PIPEURL || "http://ecollectapp01.co-opbank.co.ke:4000/upload"
+    filePath        : process.env.FILEPATH || '/app/demands/', // "d:\\demands\\",
+    imagePath       : process.env.IMAGEPATH || '/app/routes/' // 'd:\\angularprojects\\docxletters\\routes\\'
 };

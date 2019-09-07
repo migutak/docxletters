@@ -1,0 +1,12 @@
+version: "3.3"
+services:
+  docxletters:
+    image: migutak/docxletters:latest
+    container_name: docx
+    restart: always
+    volumes:
+      - d:/demands:/app/demands
+    environment:
+      - FILEPATH=/app/demands/
+    ports:
+      - "8004:8004"

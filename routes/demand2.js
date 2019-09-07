@@ -44,7 +44,7 @@ router.post('/download', function (req, res) {
   const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
 
   const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g,"*");
-  accnumber_masked = first4 + '*****';
+  accnumber_masked = first4 + 'xxxxx';
   const document = new Document();
   
     const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
@@ -250,8 +250,8 @@ router.post('/download', function (req, res) {
 
                   res.json({
                     result: 'success',
-                    message:  LETTERS_DIR + letter_data.acc + DATE + "demand2.pdf",
-                    filename: letter_data.acc + DATE + "demand2.pdf",
+                    message:  LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf",
+                    filename: accnumber_masked + DATE + "demand2.pdf",
                     piped: true
                 })
 
@@ -292,8 +292,8 @@ router.post('/download', function (req, res) {
       })*/
       res.json({
         result: 'success',
-        message:  LETTERS_DIR + letter_data.acc + DATE + "demand2.docx",
-        filename: letter_data.acc + DATE + "demand2.docx",
+        message:  LETTERS_DIR + accnumber_masked + DATE + "demand2.docx",
+        filename: accnumber_masked + DATE + "demand2.docx",
         piped: true
     })
   }
