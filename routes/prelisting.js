@@ -39,26 +39,26 @@ router.post('/download', function (req, res) {
   //
   //
   const rawaccnumber = letter_data.acc;
-  const memo = rawaccnumber.substr(2,3);
-  const first4 = rawaccnumber.substring(0,9);
+  const memo = rawaccnumber.substr(2, 3);
+  const first4 = rawaccnumber.substring(0, 9);
   const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
 
-  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g,"*");
+  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g, "*");
   accnumber_masked = first4 + 'xxxxx';
   const document = new Document();
-  
-    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
 
-    //logo start
+  const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
   if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
@@ -162,7 +162,7 @@ router.post('/download', function (req, res) {
     table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
-    table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency +  ' 0.00'));
+    table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency + ' 0.00'));
     table.getCell(row, 7).addContent(new Paragraph('Over 60 days'));
     table.getCell(row, 8).addContent(new Paragraph('14%'));
   }
@@ -180,7 +180,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt);
 
   document.createParagraph(" ");
-  const txt2 = new TextRun("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before "+ dateFormat(new Date() + 14, "dd-mmm-yyyy") +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;.");
+  const txt2 = new TextRun("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before " + dateFormat(new Date() + 14, "dd-mmm-yyyy") + ", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;.");
   const ptxt2 = new Paragraph();
   txt2.size(20);
   ptxt2.addRun(txt2);
@@ -293,48 +293,55 @@ router.post('/download', function (req, res) {
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-          word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx"))
-              .then(data => {
-                  fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'prelisting.pdf', data);
-                  
-                  // pipe to remote
-                  client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf", {
-                      host: '172.16.204.71',
-                      username: 'vomwega',
-                      password: 'Stkenya.123',
-                      path: '/tmp/demandletters/'
-                  }, function(err) {
-                      if (err) {
-                          console.log(err);
-                          res.json({
-                              result: 'error',
-                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
-                              filename: accnumber_masked + DATE + "prelisting.pdf",
-                              piped: false
-                          })
-                      } else {
-                          console.log('file moved!');
-                          res.json({
-                              result: 'success',
-                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
-                              filename: accnumber_masked + DATE + "prelisting.pdf",
-                              piped: true
-                          })
-                      }
-                  })
+        word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx"))
+          .then(data => {
+            fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'prelisting.pdf', data);
 
-              }, error => {
-                  console.log('error ...', error)
-                  res.json({
-                      result: 'error',
-                      message: 'Exception occured'
-                  });
-              })
+            // pipe to remote
+            /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf", {
+                host: '172.16.204.71',
+                username: 'vomwega',
+                password: 'Stkenya.123',
+                path: '/tmp/demandletters/'
+            }, function(err) {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        result: 'error',
+                        message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
+                        filename: accnumber_masked + DATE + "prelisting.pdf",
+                        piped: false
+                    })
+                } else {
+                    console.log('file moved!');
+                    res.json({
+                        result: 'success',
+                        message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
+                        filename: accnumber_masked + DATE + "prelisting.pdf",
+                        piped: true
+                    })
+                }
+            })*/
+
+            res.json({
+              result: 'success',
+              message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf",
+              filename: accnumber_masked + DATE + "prelisting.pdf",
+              piped: true
+            })
+
+          }, error => {
+            console.log('error ...', error)
+            res.json({
+              result: 'error',
+              message: 'Exception occured'
+            });
+          })
       }
       convert();
-  } else {
+    } else {
       // pipe to remote
-      client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx", {
+      /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx", {
           host: '172.16.204.71',
           username: 'vomwega',
           password: 'Stkenya.123',
@@ -357,8 +364,15 @@ router.post('/download', function (req, res) {
                   piped: true
               })
           }
+      })*/
+
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx",
+        filename: accnumber_masked + DATE + "prelisting.docx",
+        piped: true
       })
-  }
+    }
   }).catch((err) => {
     console.log(err);
     res.json({
