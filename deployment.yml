@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: docx-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: docxletters
+    spec:
+      containers:
+      - name: docx
+        image: migutak/docxletters:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8004
