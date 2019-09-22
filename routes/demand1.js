@@ -13,6 +13,20 @@ var client = require('scp2');
 
 var data = require('./data.js');
 
+// Define font files
+var fonts = {
+    Roboto: {
+        normal: 'fonts/Roboto-Regular.ttf',
+        bold: 'fonts/Roboto-Medium.ttf',
+        italics: 'fonts/Roboto-Italic.ttf',
+        bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+    }
+};
+
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter(fonts);
+
+
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
@@ -163,7 +177,7 @@ router.post('/download', function (req, res) {
     // table rows
     for (i = 0; i < DATA.length; i++) {
         row = i + 1
-        table.getCell(row, 1).addContent(new Paragraph((DATA[i].accnumber).substring(0, 9) + '*****'));
+        table.getCell(row, 1).addContent(new Paragraph((DATA[i].accnumber).substring(0, 9) + 'xxxxx'));
         table.getCell(row, 2).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'));
         table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR'));
         table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
@@ -217,7 +231,7 @@ router.post('/download', function (req, res) {
         //conver to pdf
         // if pdf format
         if (letter_data.format == 'pdf') {
-            const convert = () => {
+            /*const convert = () => {
                word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx"))
                     .then(data => {
                         fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'demand1.pdf', data);
@@ -246,7 +260,7 @@ router.post('/download', function (req, res) {
                                     piped: true
                                 })
                             }
-                        })*/
+                        })
 
                         res.json({
                             result: 'success',
@@ -262,38 +276,201 @@ router.post('/download', function (req, res) {
                             message: 'Exception occured'
                         });
                     })
+            }*/
+            // convert();
+            var body = [];
+            body.push(['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'])
+            for (i = 0; i < DATA.length; i++) {
+                row = i + 1
+                body.push([(DATA[i].accnumber).substring(0, 9) + 'xxxxx', 
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR',
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR', 
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR',
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR', 
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].instamount)).format('0,0.00') + ' DR'
+            ])
             }
-            convert();
+            var dd = {
+                pageSize: 'A4',
+                pageOrientation: 'portrait',
+                // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
+                pageMargins: [50, 60, 50, 60],
+                footer: {
+                    columns: [
+                        { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+                    ],
+                    style: 'superMargin'
+                },
+
+                content: [
+                    {
+                        alignment: 'justify',
+                        columns: [
+                            {
+                                image: 'coop.jpg',
+                                width: 300
+                            },
+                            {
+                                type: 'none',
+                                alignment: 'right',
+                                fontSize: 9,
+                                ol: [
+                                    'The Co-operative Bank of Kenya Limited',
+                                    'Co-operative Bank House',
+                                    'Haile Selassie Avenue',
+                                    'P.O. Box 48231-00100 GPO, Nairobi',
+                                    'Tel: (020) 3276100',
+                                    'Fax: (020) 2227747/2219831',
+                                    { text: 'www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                                ]
+                            },
+                        ],
+                        columnGap: 10
+                    },
+                    {
+                        text: '\n\n\'\'Without Prejudice\'\'\n\n',
+                        alignment: 'center',
+                        bold: true
+                    },
+                    'Our Ref: DEMAND1/' + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE,
+                    '\n' + DATE,
+                    '\n' + letter_data.custname,
+                    letter_data.address + '-' + letter_data.postcode,
+
+                    '\nDear Sir/Madam',
+
+
+
+                    {
+                        text: 'RE: OUTSTANDING LIABILITIES A/C NO. ' + accnumber_masked + ' - ' + letter_data.custname + '',
+                        style: 'subheader'
+                    },
+
+                    { text: '\nWe write to notify you that your account/s is currently in arrears/overdrawn. Kindly note that your current balance is as indicated below and it continues to accrue interest until payment is made in full.', alignment: 'justify' },
+                    '\n',
+                    {
+                        alignment: 'justify',
+                        fontSize: 9.5,
+                        table: {
+                            body: body,
+                            /*[
+                                ['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
+                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR']
+                            ]*/
+                        },
+                        layout: {
+                            fillColor: function (rowIndex, node, columnIndex) {
+                                return (rowIndex % 2 === 0) ? '#CCCCCC' : null;
+                            }
+                        }
+                    },
+
+                    {
+                        text: '\nThe purpose of this letter therefore is to DEMAND immediate payment for the amount in arrears. Kindly ensure that the same is paid within fourteen days (14) from the date hereof. ',
+                        fontSize: 10, alignment: 'justify'
+                    },
+
+                    { text: '\nIn the event that you require any clarification or information, you may contact the undersigned on Telephone number 0203276000/ 0711049000/0732106000. ', fontSize: 10, alignment: 'justify' },
+
+                    { text: '\nYours Faithfully, ' },
+                    { text: '\n\nTERESIAH WANGARI, ' },
+                    { text: 'BRANCH MANAGER , ' },
+                    { text: 'KAWANGWARE BRANCH ' },
+                    { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
+                ],
+                styles: {
+                    header: {
+                        fontSize: 18,
+                        bold: true,
+                        alignment: 'right',
+                        margin: [0, 190, 0, 80]
+                    },
+                    subheader: {
+                        fontSize: 12,
+                        bold: true,
+                        decoration: 'underline'
+                    },
+                    superMargin: {
+                        margin: [20, 0, 40, 0],
+                        fontSize: 8, alignment: 'center', opacity: 0.5
+                    },
+                    quote: {
+                        italics: true
+                    },
+                    small: {
+                        fontSize: 8
+                    }
+                },
+                defaultStyle: {
+                    fontSize: 10
+                }
+            };
+
+            var options = {
+                // ...
+            }
+
+            var pdfDoc = printer.createPdfKitDocument(dd, options);
+            pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf"));
+            pdfDoc.end();
+
+            // send response
+            res.json({
+                result: 'success',
+                message:  LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
+                filename: accnumber_masked + DATE + "demand1.pdf",
+                piped: true
+            })
         } else {
             // pipe to remote
-           /* client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", {
-                host: '172.16.204.71',
-                username: 'vomwega',
-                password: 'Stkenya.123',
-                path: '/tmp/demandletters/'
-            }, function(err) {
-                if (err) {
-                    console.log(err);
-                    res.json({
-                        result: 'error',
-                        message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.docx",
-                        filename: accnumber_masked + DATE + "demand1.docx",
-                        piped: false
-                    })
-                } else {
-                    console.log('file moved!');
-                    res.json({
-                        result: 'success',
-                        message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.docx",
-                        filename: accnumber_masked + DATE + "demand1.docx",
-                        piped: true
-                    })
-                }
-            })*/
+            /* client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", {
+                 host: '172.16.204.71',
+                 username: 'vomwega',
+                 password: 'Stkenya.123',
+                 path: '/tmp/demandletters/'
+             }, function(err) {
+                 if (err) {
+                     console.log(err);
+                     res.json({
+                         result: 'error',
+                         message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.docx",
+                         filename: accnumber_masked + DATE + "demand1.docx",
+                         piped: false
+                     })
+                 } else {
+                     console.log('file moved!');
+                     res.json({
+                         result: 'success',
+                         message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.docx",
+                         filename: accnumber_masked + DATE + "demand1.docx",
+                         piped: true
+                     })
+                 }
+             })*/
 
             res.json({
                 result: 'success',
-                message:  LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
+                message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
                 filename: accnumber_masked + DATE + "demand1.docx",
                 piped: true
             });
