@@ -8,6 +8,8 @@
 }*/
 
 module.exports = {
-    filePath        : process.env.FILEPATH || '/app/demands/', // "d:\\demands\\",
-    imagePath       : process.env.IMAGEPATH || '/app/routes/' // 'd:\\angularprojects\\docxletters\\routes\\'
+    // filePath        : process.env.FILEPATH || '/app/demands/', // "d:\\demands\\",
+    // imagePath       : process.env.IMAGEPATH || '/app/routes/' // 'd:\\angularprojects\\docxletters\\routes\\',
+    filePath        : process.env.FILEPATH || "d:\\demands\\",
+    imagePath       : process.env.IMAGEPATH || 'd:\\angularprojects\\docxletters\\routes\\'
 };
