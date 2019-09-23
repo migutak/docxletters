@@ -13,6 +13,19 @@ var client = require('scp2');
 
 var data = require('./data.js');
 
+// Define font files
+var fonts = {
+  Roboto: {
+    normal: 'fonts/Roboto-Regular.ttf',
+    bold: 'fonts/Roboto-Medium.ttf',
+    italics: 'fonts/Roboto-Italic.ttf',
+    bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+  }
+};
+
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter(fonts);
+
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
@@ -32,7 +45,7 @@ router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
+  const GUARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
@@ -43,7 +56,7 @@ router.post('/download', function (req, res) {
   const first4 = rawaccnumber.substring(0, 9);
   const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
 
-  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g, "*");
+  
   accnumber_masked = first4 + 'xxxxx';
   const document = new Document();
 
@@ -255,7 +268,7 @@ router.post('/download', function (req, res) {
   crb9.color("blue")
   pcrb9.addRun(crb9);
   document.addParagraph(pcrb9);
-  //stop crb
+  //st
 
   document.createParagraph(" ");
   document.createParagraph("Yours Faithfully, ");
@@ -266,13 +279,13 @@ router.post('/download', function (req, res) {
   document.createParagraph(letter_data.branchname);
 
 
-  if (GURARANTORS.length > 0) {
+  if (GUARANTORS.length > 0) {
     document.createParagraph("cc: ");
 
-    for (g = 0; g < GURARANTORS.length; g++) {
+    for (g = 0; g < GUARANTORS.length; g++) {
       document.createParagraph(" ");
-      document.createParagraph(GURARANTORS[g].name);
-      document.createParagraph(GURARANTORS[g].address);
+      document.createParagraph(GUARANTORS[g].name);
+      document.createParagraph(GUARANTORS[g].address);
     }
   }
 
@@ -292,80 +305,241 @@ router.post('/download', function (req, res) {
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx"))
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'prelisting.pdf', data);
 
-            // pipe to remote
-            /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf", {
-                host: '172.16.204.71',
-                username: 'vomwega',
-                password: 'Stkenya.123',
-                path: '/tmp/demandletters/'
-            }, function(err) {
-                if (err) {
-                    console.log(err);
-                    res.json({
-                        result: 'error',
-                        message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
-                        filename: accnumber_masked + DATE + "prelisting.pdf",
-                        piped: false
-                    })
-                } else {
-                    console.log('file moved!');
-                    res.json({
-                        result: 'success',
-                        message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.pdf",
-                        filename: accnumber_masked + DATE + "prelisting.pdf",
-                        piped: true
-                    })
-                }
-            })*/
-
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf",
-              filename: accnumber_masked + DATE + "prelisting.pdf",
-              piped: true
-            })
-
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+      var body = [];
+      var body2 = [];
+      body2.push(['Type of facility', 'Amount (Kshs)'])
+      for (i = 0; i < DATA.length; i++) {
+        row = i + 1
+        body2.push([DATA[i].productcode,
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'
+      ])
       }
-      convert();
-    } else {
-      // pipe to remote
-      /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx", {
-          host: '172.16.204.71',
-          username: 'vomwega',
-          password: 'Stkenya.123',
-          path: '/tmp/demandletters/'
-      }, function(err) {
-          if (err) {
-              console.log(err);
-              res.json({
-                  result: 'error',
-                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.docx",
-                  filename: accnumber_masked + DATE + "prelisting.docx",
-                  piped: false
-              })
-          } else {
-              console.log('file moved!');
-              res.json({
-                  result: 'success',
-                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "prelisting.docx",
-                  filename: accnumber_masked + DATE + "prelisting.docx",
-                  piped: true
-              })
-          }
-      })*/
 
+      body.push(['Loan Account Number', 'Principal Loan Balance', 'Accrued Interest on principal', 'Principal Arrears', 'Interest in Arrears', 'Penalty Interest', 'Days in arrears', 'Interest Rate per annum'])
+      for (i = 0; i < DATA.length; i++) {
+        row = i + 1
+        body.push([(DATA[i].accnumber).substring(0, 9) + 'xxxxx',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' 0.00',
+        'Over 60 days',
+        '14%'
+        ])
+      }
+
+      function guarantors() {
+        if (GUARANTORS.length > 0) {
+          var inc = "\ncc: \n";
+          var guar = ''
+          for (g = 0; g < GUARANTORS.length; g++) {
+            guar = guar + GUARANTORS[g].guarantorname + '\n' + GUARANTORS[g].address + '\n\n';
+          }
+          return inc + guar;
+        }
+      }
+
+      var dd = {
+        pageSize: 'A4',
+        pageOrientation: 'portrait',
+        // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
+        pageMargins: [50, 50, 50, 50],
+        footer: {
+          columns: [
+            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+          ],
+          style: 'superMargin'
+        },
+
+        content: [
+          {
+            alignment: 'justify',
+            columns: [
+              {
+                image: 'coop.jpg',
+                width: 300
+              },
+              {
+                type: 'none',
+                alignment: 'right',
+                fontSize: 9,
+                ol: [
+                  'The Co-operative Bank of Kenya Limited',
+                  'Co-operative Bank House',
+                  'Haile Selassie Avenue',
+                  'P.O. Box 48231-00100 GPO, Nairobi',
+                  'Tel: (020) 3276100',
+                  'Fax: (020) 2227747/2219831',
+                  'www.co-opbank.co.ke'
+                ]
+              },
+            ],
+            columnGap: 10
+          },
+          {
+            text: '\n\n\'\'Without Prejudice\'\'\n\n',
+            alignment: 'center',
+            bold: true
+          },
+          'Our Ref: PRELISTING/' + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE,
+          '\n' + DATE,
+          {
+            type: 'none',
+            alignment: 'right',
+            fontSize: 9,
+            ol: [
+              'BY REGISTERED POST',
+              'Copy by ordinary Mail'
+            ]
+          },
+          
+          '\n' + letter_data.custname,
+          letter_data.address + '-' + letter_data.postcode,
+
+          '\nDear Sir/Madam',
+
+          {
+            text: '\nREF: PRE-LISTING NOTIFICATION ISSUED PURSUANT TO REGULATION 50(1) (a) OF THE CREDIT REFERENCE BUREAU REGULATIONS, 2013:',
+            style: 'subheader'
+          },
+  
+  "\nWe wish to inform you that, in line with the above Regulations, Banks, Microfinance Banks (MFBs) and the Deposit Protection Fund Board (DPFB) are required to share credit information of all their borrowers through licensed Credit Reference Bureaus (CRBs).  ",
+  
+  "\nA default in loan repayment will result in a negative impact on your credit record. If your loan is classified as Non-Performing as per the Banking Act & Prudential Guidelines and/or as per the Microfinance Act, your credit profile at the CRBs will be adversely affected.   ",
+  
+  "\nPlease note that your loans are currently in default with outstanding balances and arrears, having not paid the full instalments. These loans continue to accrue interest at various rates per annum. Here below please find the loan/overdrawn particulars: ",
+  
+          '\n',
+
+          {
+            alignment: 'left',
+            fontSize: 9,
+            table: {
+              body: body2
+            }
+          },
+          '\n',
+          '\nThis is broken down as follows: ',
+          '\n',
+          
+          {
+            alignment: 'left',
+            fontSize: 9,
+            table: {
+              body: body
+            }
+          },
+
+          { text: '\nPlease note that interest continues to accrue at various Bank rates until the outstanding balance is paid in full. ', fontSize: 10 },
+
+          { text: '\nKindly also note that under the provisions of the Banking (Credit Reference Bureau) Regulations 2013, it is now a mandatory requirement in law that all financial institutions share positive and negative credit information while assessing customers credit worthiness, standing and capacity through duly licensed Credit Reference Bureaus (CRBs) for inclusion and maintenance in their database for purposes of sharing the said information', fontSize: 10 },
+
+          { text: '\nKindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before 23-Sep-2019, failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;', fontSize: 10 },
+
+          { text: '\nWe hereby notify you that we will proceed to adversely list you with the CRBs if your loan (s) becomes nonperforming. To avoid an adverse listing, you are advised to clear the outstanding arrears.', fontSize: 10 },
+
+          { text: '\nYou have a right of access to your credit report at the CRBs and you may dispute any erroneous information. You may request for your report by contacting the CRBs at the following addresses:', fontSize: 10 },
+
+          '\n',
+
+          {
+            columns: [
+              {
+                type: 'none',
+                ol: [
+                  'TransUnion CRB',
+                  'Delta Corner Annex, Ring Road,',
+                  'Westlands Lane, Nairobi.',
+                  'P.O. Box 46406, 00100, NAIROBI,',
+                  'Tel: +254 (0) 20 51799/3751360/2/4/5',
+                  'Fax:+254(0)20 3751344',
+                  'Email: info@crbafrica.com',
+                  'www.crbafrica.com'
+                ]
+              },
+              {
+                type: 'none',
+                ol: [
+                  'Metropol CRB',
+                  '1st Floor, Shelter Afrique Centre,',
+                  'Upper Hill, Nairobi',
+                  'P.O Box 35331–00200 , NAIROBI',
+                  'Tel: +254(0)20 2689881/27113575',
+                  'Fax: +254 (0) 20273572',
+                  'Email: creditbureau@metropol.co.ke',
+                  'www.metropolcorporation.com'
+                ]
+              },
+              {
+                type: 'none',
+                ol: [
+                  'Creditinfo CRB Kenya Ltd',
+                  'Park Suites, Office 12, Second Floor,',
+                  'Parklands Road, Nairobi.',
+                  'P.O. Box 38941-00623, NAIROBI ',
+                  'Tel: 020 3757272',
+                  'Fax: +254 (0) 20273572',
+                  'Email: cikinfo@creditinfo.co.ke',
+                  ' Website: ke.creditinfo.com'
+                ]
+              }
+            ]
+          },
+
+          { text: '\nYours Faithfully, ' },
+          { text: '\n\nBRANCH MANAGER , ' },
+          { text: letter_data.branchname },
+          { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
+          guarantors()
+
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'right',
+            margin: [0, 190, 0, 80]
+          },
+          subheader: {
+            fontSize: 12,
+            bold: true,
+            decoration: 'underline'
+          },
+          superMargin: {
+            margin: [20, 0, 40, 0],
+            fontSize: 8, alignment: 'center', opacity: 0.5
+          },
+          quote: {
+            italics: true
+          },
+          small: {
+            fontSize: 8
+          }
+        },
+        defaultStyle: {
+          fontSize: 10
+        }
+      };
+
+      var options = {
+        // ...
+      }
+
+      var pdfDoc = printer.createPdfKitDocument(dd, options);
+      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf"));
+      pdfDoc.end();
+
+      // send response
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf",
+        filename: accnumber_masked + DATE + "prelisting.pdf",
+        piped: true
+      })
+    } else {
       res.json({
         result: 'success',
         message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.docx",

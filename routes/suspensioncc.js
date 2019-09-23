@@ -12,6 +12,19 @@ const cors = require('cors')
 
 var data = require('./data.js');
 
+// Define font files
+var fonts = {
+  Roboto: {
+    normal: 'fonts/Roboto-Regular.ttf',
+    bold: 'fonts/Roboto-Medium.ttf',
+    italics: 'fonts/Roboto-Italic.ttf',
+    bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+  }
+};
+
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter(fonts);
+
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
@@ -23,7 +36,7 @@ router.use(bodyParser.urlencoded({
 
 router.use(bodyParser.json());
 router.use(cors())
- 
+
 /*router.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -198,24 +211,115 @@ router.post('/download', function (req, res) {
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'suspension.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf",
-              filename: letter_data.cardacct + DATE + "suspension.pdf"
-            })
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+      var dd = {
+        pageSize: 'A4',
+        pageOrientation: 'portrait',
+        // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
+        pageMargins: [50, 60, 50, 60],
+        footer: {
+          columns: [
+            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+          ],
+          style: 'superMargin'
+        },
+
+        content: [
+          {
+            alignment: 'justify',
+            columns: [
+              {
+                image: 'coop.jpg',
+                width: 300
+              },
+              {
+                type: 'none',
+                alignment: 'right',
+                fontSize: 9,
+                ol: [
+                  'The Co-operative Bank of Kenya Limited',
+                  'Co-operative Bank House',
+                  'Haile Selassie Avenue',
+                  'P.O. Box 48231-00100 GPO, Nairobi',
+                  'Tel: (020) 3276100',
+                  'Fax: (020) 2227747/2219831',
+                  { text: 'www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                ]
+              },
+            ],
+            columnGap: 10
+          },
+          "Our Ref: SUSPENSION/" + letter_data.cardacct + '/' + DATE,
+          '\n' + dateFormat(new Date(), 'dd-mmm-yyyy'),
+          '\n' + letter_data.cardname,
+          '' + letter_data.address + '-' + letter_data.rpcode,
+          letter_data.city,
+
+          '\nDear Sir/Madam',
+
+          {
+            text: "\nRE: CO-OPCARD ACCOUNT NO: " + letter_data.cardacct,
+            style: 'subheader'
+          },
+
+          "\nYour Co-opcard offers many exclusive benefits in addition to the unsecured credit facility. In order for you to enjoy these benefits to the full, proper maintenance of the account is vital.  We regret this has not been the case.",
+ 
+          "\nYour account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + "DR and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.",
+  
+          "\nWe are now giving you notice that your personal information and credit account details will be disclosed to the Credit Reference Bureau, in accordance with the Banking Act and CRB regulations 2013. Be advised that any credit defaults will remain on your credit file for up to five years from the date of settlement. ",
+  
+
+          { text: '\nYours sincerely, ' },
+          {
+            image: 'sign_rose.png',
+            width: 100,
+            height: 50
+          },
+          { text: 'ROSE KARAMBU  ' },
+          { text: 'COLLECTIONS SUPPORT MANAGER.' }
+
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'right',
+            margin: [0, 190, 0, 80]
+          },
+          subheader: {
+            fontSize: 12,
+            bold: true,
+            decoration: 'underline'
+          },
+          superMargin: {
+            margin: [20, 0, 40, 0],
+            fontSize: 8, alignment: 'center', opacity: 0.5
+          },
+          quote: {
+            italics: true
+          },
+          small: {
+            fontSize: 8
+          }
+        },
+        defaultStyle: {
+          fontSize: 10
+        }
+      }; // end dd
+
+      var options = {
+        // ...
       }
-      convert();
+
+      var pdfDoc = printer.createPdfKitDocument(dd, options);
+      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf"));
+      pdfDoc.end();
+
+      // send response
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf",
+        filename: letter_data.cardacct + DATE + "suspension.pdf"
+      })
     } else {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'suspension.docx'));
       res.json({

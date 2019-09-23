@@ -205,7 +205,7 @@ router.post('/download', function (req, res) {
     document.createParagraph(" ");
 
     if (GUARANTORS.length > 0) {
-        document.createParagraph("CC: ");
+        document.createParagraph("cc: ");
 
         for (g = 0; g < GUARANTORS.length; g++) {
             document.createParagraph(" ");
@@ -282,13 +282,24 @@ router.post('/download', function (req, res) {
             body.push(['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'])
             for (i = 0; i < DATA.length; i++) {
                 row = i + 1
-                body.push([(DATA[i].accnumber).substring(0, 9) + 'xxxxx', 
+                body.push([(DATA[i].accnumber).substring(0, 9) + 'xxxxx',
                 DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR',
-                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR', 
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR',
                 DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR',
-                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR', 
+                DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR',
                 DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].instamount)).format('0,0.00') + ' DR'
-            ])
+                ])
+            }
+
+            function guarantors() {
+                if (GUARANTORS.length > 0) {
+                    var inc = "\ncc: \n";
+                    var guar = ''
+                    for (g = 0; g < GUARANTORS.length; g++) {
+                        guar = guar + GUARANTORS[g].guarantorname + '\n' + GUARANTORS[g].address + '\n\n';
+                    }
+                    return inc + guar;
+                }
             }
             var dd = {
                 pageSize: 'A4',
@@ -353,29 +364,6 @@ router.post('/download', function (req, res) {
                         fontSize: 9.5,
                         table: {
                             body: body,
-                            /*[
-                                ['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR'],
-                                ['01116413840300', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR', 'KES 0.00 DR']
-                            ]*/
                         },
                         layout: {
                             fillColor: function (rowIndex, node, columnIndex) {
@@ -392,10 +380,11 @@ router.post('/download', function (req, res) {
                     { text: '\nIn the event that you require any clarification or information, you may contact the undersigned on Telephone number 0203276000/ 0711049000/0732106000. ', fontSize: 10, alignment: 'justify' },
 
                     { text: '\nYours Faithfully, ' },
-                    { text: '\n\nTERESIAH WANGARI, ' },
-                    { text: 'BRANCH MANAGER , ' },
-                    { text: 'KAWANGWARE BRANCH ' },
+                    { text: '\n\nBRANCH MANAGER , ' },
+                    { text: letter_data.branchname },
                     { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
+                    guarantors()
 
                 ],
                 styles: {
@@ -424,7 +413,7 @@ router.post('/download', function (req, res) {
                 defaultStyle: {
                     fontSize: 10
                 }
-            };
+            }; // end dd
 
             var options = {
                 // ...
@@ -437,7 +426,7 @@ router.post('/download', function (req, res) {
             // send response
             res.json({
                 result: 'success',
-                message:  LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
+                message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
                 filename: accnumber_masked + DATE + "demand1.pdf",
                 piped: true
             })

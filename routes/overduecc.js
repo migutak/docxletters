@@ -12,6 +12,19 @@ const cors = require('cors')
 
 var data = require('./data.js');
 
+// Define font files
+var fonts = {
+  Roboto: {
+    normal: 'fonts/Roboto-Regular.ttf',
+    bold: 'fonts/Roboto-Medium.ttf',
+    italics: 'fonts/Roboto-Italic.ttf',
+    bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+  }
+};
+
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter(fonts);
+
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
@@ -59,7 +72,7 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    document.createImage(fs.readFileSync( IMAGEPATH + 'coop.jpg'), 350, 60, {
+    document.createImage(fs.readFileSync(IMAGEPATH + 'coop.jpg'), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
@@ -233,24 +246,133 @@ router.post('/download', function (req, res) {
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "overdue.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'overdue.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "overdue.pdf",
-              filename: letter_data.cardacct + DATE + "overduecc.pdf"
-            })
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+      var dd = {
+        pageSize: 'A4',
+        pageOrientation: 'portrait',
+        // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
+        pageMargins: [50, 60, 50, 60],
+        footer: {
+          columns: [
+            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+          ],
+          style: 'superMargin'
+        },
+
+        content: [
+          {
+            alignment: 'justify',
+            columns: [
+              {
+                image: 'coop.jpg',
+                width: 300
+              },
+              {
+                type: 'none',
+                alignment: 'right',
+                fontSize: 9,
+                ol: [
+                  'The Co-operative Bank of Kenya Limited',
+                  'Co-operative Bank House',
+                  'Haile Selassie Avenue',
+                  'P.O. Box 48231-00100 GPO, Nairobi',
+                  'Tel: (020) 3276100',
+                  'Fax: (020) 2227747/2219831',
+                  { text: 'www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                ]
+              },
+            ],
+            columnGap: 10
+          },
+          "Our Ref: OVERDUE/" + letter_data.cardacct + '/' + DATE,
+          '\n' + dateFormat(new Date(), 'dd-mmm-yyyy'),
+          '\n' + letter_data.cardname,
+          '' + letter_data.address + '-' + letter_data.rpcode,
+          letter_data.city,
+
+          '\nDear Sir/Madam',
+
+          {
+            text: "\nRE: OVERDUE CARD PAYMENT ACCOUNT NUMBER: " + letter_data.cardacct,
+            style: 'subheader'
+          },
+
+          "\nWe would like to draw your attention to your Co-op card account which is currently overdue. The total amount overdue is Kshs " + numeral(Math.abs(letter_data.exp_pmnt)).format('0,0.00') + "DR while your current outstanding balance is Kshs " + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + "DR ",
+
+
+          // { text: '\nWe wish to inform you that in line with the above Regulations, Banks, Microfinance Banks (MFBs) and the Deposit Protection Fund Board (DPFB) are required to share credit information of all their borrowers through licensed Credit Reference Bureaus (CRBs). ', alignment: 'justify' },
+
+          "\nWe therefore request you to send payment of the above overdue amount immediately to avoid escalation of the interest and late payment charges accruing at 1.083% and 5% every month respectively. ",
+
+          "\nIf you have any query regarding the above amount or suspect that your payment has been delayed, please feel free to contact the undersigned. If payment has already been sent, please ignore this letter. ",
+
+          {
+            text: ['\nPayment can be made via ',
+                    { text: 'Mpesa Paybill No. 400200 Account No. CR ' + letter_data.cardacct, bold: true },
+                  ]
+          },
+
+          {
+            text: '\nWe appreciate the opportunity to serve you. ',
+            alignment: 'left'
+          },
+
+          {
+            text: '\nKindly provide us with your email address by replying through Cardcentre@co-opbank.co.ke to enable us serve you better. ',
+            alignment: 'left'
+          },
+
+          { text: '\nYours sincerely, ' },
+          {
+            image: 'sign_rose.png',
+            width: 100,
+            height: 50
+          },
+          { text: 'ROSE KARAMBU  ' },
+          { text: 'COLLECTIONS SUPPORT MANAGER.' }
+
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'right',
+            margin: [0, 190, 0, 80]
+          },
+          subheader: {
+            fontSize: 12,
+            bold: true,
+            decoration: 'underline'
+          },
+          superMargin: {
+            margin: [20, 0, 40, 0],
+            fontSize: 8, alignment: 'center', opacity: 0.5
+          },
+          quote: {
+            italics: true
+          },
+          small: {
+            fontSize: 8
+          }
+        },
+        defaultStyle: {
+          fontSize: 10
+        }
+      }; // end dd
+
+      var options = {
+        // ...
       }
-      convert();
+
+      var pdfDoc = printer.createPdfKitDocument(dd, options);
+      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf"));
+      pdfDoc.end();
+
+      // send response
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf",
+        filename: letter_data.cardacct + DATE + "overduecc.pdf"
+      })
     } else {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'overdue.docx'));
       res.json({
