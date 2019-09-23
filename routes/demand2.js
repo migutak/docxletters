@@ -13,6 +13,19 @@ var client = require('scp2');
 
 var data = require('./data.js');
 
+// Define font files
+var fonts = {
+  Roboto: {
+    normal: 'fonts/Roboto-Regular.ttf',
+    bold: 'fonts/Roboto-Medium.ttf',
+    italics: 'fonts/Roboto-Italic.ttf',
+    bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+  }
+};
+
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter(fonts);
+
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
@@ -39,26 +52,26 @@ router.post('/download', function (req, res) {
   //
   //
   const rawaccnumber = letter_data.acc;
-  const memo = rawaccnumber.substr(2,3);
-  const first4 = rawaccnumber.substring(0,9);
+  const memo = rawaccnumber.substr(2, 3);
+  const first4 = rawaccnumber.substring(0, 9);
   const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
 
-  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g,"*");
+  const mask = rawaccnumber.substring(4, rawaccnumber.length - 4).replace(/\d/g, "*");
   accnumber_masked = first4 + 'xxxxx';
   const document = new Document();
-  
-    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
 
-    //logo start
+  const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
   if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
@@ -217,86 +230,165 @@ router.post('/download', function (req, res) {
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
-      const convert = () => {
-          word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "demand2.docx"))
-              .then(data => {
-                  fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'demand2.pdf', data);
-                  
-                  // pipe to remote
-                 /* client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf", {
-                      host: '172.16.204.71',
-                      username: 'vomwega',
-                      password: 'Stkenya.123',
-                      path: '/tmp/demandletters/'
-                  }, function(err) {
-                      if (err) {
-                          console.log(err);
-                          res.json({
-                              result: 'error',
-                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.pdf",
-                              filename: accnumber_masked + DATE + "demand2.pdf",
-                              piped: false
-                          })
-                      } else {
-                          console.log('file moved!');
-                          res.json({
-                              result: 'success',
-                              message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.pdf",
-                              filename: accnumber_masked + DATE + "demand2.pdf",
-                              piped: true
-                          })
-                      }
-                  })*/
-
-                  res.json({
-                    result: 'success',
-                    message:  LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf",
-                    filename: accnumber_masked + DATE + "demand2.pdf",
-                    piped: true
-                })
-
-              }, error => {
-                  console.log('error ...', error)
-                  res.json({
-                      result: 'error',
-                      message: 'Exception occured'
-                  });
-              })
+      var body = [];
+      body.push(['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'])
+      for (i = 0; i < DATA.length; i++) {
+        row = i + 1
+        body.push([(DATA[i].accnumber).substring(0, 9) + 'xxxxx',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR',
+        DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].instamount)).format('0,0.00') + ' DR'
+        ])
       }
-      convert();
-  } else {
-      // pipe to remote
-      /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand2.docx", {
-          host: '172.16.204.71',
-          username: 'vomwega',
-          password: 'Stkenya.123',
-          path: '/tmp/demandletters/'
-      }, function(err) {
-          if (err) {
-              console.log(err);
-              res.json({
-                  result: 'error',
-                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.docx",
-                  filename: accnumber_masked + DATE + "demand2.docx",
-                  piped: false
-              })
-          } else {
-              console.log('file moved!');
-              res.json({
-                  result: 'success',
-                  message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand2.docx",
-                  filename: accnumber_masked + DATE + "demand2.docx",
-                  piped: true
-              })
+
+      function guarantors() {
+        if (GUARANTORS.length > 0) {
+          var inc = "\ncc: \n";
+          var guar = ''
+          for (g = 0; g < GUARANTORS.length; g++) {
+            guar = guar + GUARANTORS[g].guarantorname + '\n' + GUARANTORS[g].address + '\n\n';
           }
-      })*/
+          return inc + guar;
+        }
+      }
+      var dd = {
+        pageSize: 'A4',
+        pageOrientation: 'portrait',
+        // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
+        pageMargins: [50, 60, 50, 60],
+        footer: {
+          columns: [
+            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+          ],
+          style: 'superMargin'
+        },
+
+        content: [
+          {
+            alignment: 'justify',
+            columns: [
+              {
+                image: 'coop.jpg',
+                width: 300
+              },
+              {
+                type: 'none',
+                alignment: 'right',
+                fontSize: 9,
+                ol: [
+                  'The Co-operative Bank of Kenya Limited',
+                  'Co-operative Bank House',
+                  'Haile Selassie Avenue',
+                  'P.O. Box 48231-00100 GPO, Nairobi',
+                  'Tel: (020) 3276100',
+                  'Fax: (020) 2227747/2219831',
+                  { text: 'www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                ]
+              },
+            ],
+            columnGap: 10
+          },
+          {
+            text: '\n\n\'\'Without Prejudice\'\'\n\n',
+            alignment: 'center',
+            bold: true
+          },
+          'Our Ref: DEMAND2/' + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE,
+          '\n' + DATE,
+          '\n' + letter_data.custname,
+          letter_data.address + '-' + letter_data.postcode,
+
+          '\nDear Sir/Madam',
+
+          {
+            text: 'RE: OUTSTANDING LIABILITIES A/C NO. ' + accnumber_masked + ' - ' + letter_data.custname + '',
+            style: 'subheader'
+          },
+
+          '\nFollowing our 1st notice ' + dateFormat(letter_data.demand1date, 'dd-mmm-yyyy') + ', we note with concern that your account/s is/are still in arrears/overdrawn Kindly note that your current balance/s as indicated below and it/they continue/s to accrue interest until payment is made in full.',
+          '\n',
+          {
+            alignment: 'justify',
+            fontSize: 9,
+            table: {
+              body: body
+            },
+            layout: {
+              fillColor: function (rowIndex, node, columnIndex) {
+                return (rowIndex % 2 === 0) ? '#CCCCCC' : null;
+              }
+            }
+          },
+
+          { text: '\nWe DEMAND that you pay the amount in arrears, plus the accrued interest within fourteen days (14) from the date hereof. ', fontSize: 10 },
+
+          { text: '\nKindly also note that under the provisions of the Banking (Credit Reference Bureau) Regulations 2013, it is now a mandatory requirement in law that all financial institutions share positive and negative credit information while assessing customers credit worthiness, standing and capacity through duly licensed Credit Reference Bureaus (CRBs) for inclusion and maintenance in their database for purposes of sharing the said information.', fontSize: 10 },
+
+          { text: '\nWe would therefore as a matter of courtesy like to notify you that unless you fully settle all your outstanding arrears with the Bank from the date stated above we shall proceed to adversely update your details and information with the CRBs relating to your credit worthiness and standing. ', fontSize: 10 },
+
+          { text: '\nIn the event that you require any clarification or information, you may contact the undersigned on Telephone number 0203276000/ 0711049000/0732106000 ', fontSize: 10 },
+
+          { text: '\nYours Faithfully, ' },
+          { text: '\n\nBRANCH MANAGER , ' },
+          { text: letter_data.branchname },
+          { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
+          guarantors()
+
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'right',
+            margin: [0, 190, 0, 80]
+          },
+          subheader: {
+            fontSize: 12,
+            bold: true,
+            decoration: 'underline'
+          },
+          superMargin: {
+            margin: [20, 0, 40, 0],
+            fontSize: 8, alignment: 'center', opacity: 0.5
+          },
+          quote: {
+            italics: true
+          },
+          small: {
+            fontSize: 8
+          }
+        },
+        defaultStyle: {
+          fontSize: 10
+        }
+      }; // end dd
+
+      var options = {
+        // ...
+      }
+
+      var pdfDoc = printer.createPdfKitDocument(dd, options);
+      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf"));
+      pdfDoc.end();
+
+      // send response
       res.json({
         result: 'success',
-        message:  LETTERS_DIR + accnumber_masked + DATE + "demand2.docx",
+        message: LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf",
+        filename: accnumber_masked + DATE + "demand2.pdf",
+        piped: true
+      })
+    } else {
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "demand2.docx",
         filename: accnumber_masked + DATE + "demand2.docx",
         piped: true
-    })
-  }
+      })
+    }
   }).catch((err) => {
     console.log(err);
     res.json({

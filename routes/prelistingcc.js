@@ -12,6 +12,19 @@ const word2pdf = require('word2pdf-promises');
 var data = require('./data.js');
 const cors = require('cors')
 
+// Define font files
+var fonts = {
+  Roboto: {
+    normal: 'fonts/Roboto-Regular.ttf',
+    bold: 'fonts/Roboto-Medium.ttf',
+    italics: 'fonts/Roboto-Italic.ttf',
+    bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+  }
+};
+
+var PdfPrinter = require('pdfmake');
+var printer = new PdfPrinter(fonts);
+
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
@@ -23,7 +36,7 @@ const {
   BorderStyle,
   Borders,
   HorizontalPositionRelativeFrom,
-  VerticalPositionRelativeFrom,HorizontalPositionAlign,
+  VerticalPositionRelativeFrom, HorizontalPositionAlign,
   VerticalPositionAlign, floating
 } = docx;
 
@@ -64,7 +77,7 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    document.createImage(fs.readFileSync( IMAGEPATH + 'coop.jpg'), 350, 60, {
+    document.createImage(fs.readFileSync(IMAGEPATH + 'coop.jpg'), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
@@ -230,23 +243,10 @@ router.post('/download', function (req, res) {
   pcrb9.addRun(crb9);
   document.addParagraph(pcrb9);
 
-  /*const crb7 = new TextRun("Please text your name to 21272 and                                                  ");
-  const pcrb7 = new Paragraph();
-  crb7.size(20);
-  pcrb7.addRun(crb7);
-  document.addParagraph(pcrb7);
-
-  const crb8 = new TextRun("follow instructions to secure a copy of your CRB report.                                                 ");
-  const pcrb8 = new Paragraph();
-  crb8.size(20);
-  pcrb8.addRun(crb8);
-  document.addParagraph(pcrb8);*/
-  //
-
   document.createParagraph(" ");
   document.createParagraph("Yours sincerely, ");
   // sign
-  document.createImage(fs.readFileSync( IMAGEPATH + "sign_rose.png"), 100, 50);
+  document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 50);
   //sign
   const sign = new TextRun("ROSE KARAMBU ");
   const psign = new Paragraph();
@@ -266,28 +266,123 @@ router.post('/download', function (req, res) {
 
   packer.toBuffer(document).then((buffer) => {
     fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.docx", buffer);
-    //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.docx")
-          .then(data => {
-            console.log('data here ...');
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'prelistingcc.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf",
-              filename: letter_data.cardacct + DATE + "prelistingcc.pdf"
-            })
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+      var dd = {
+        pageSize: 'A4',
+        pageOrientation: 'portrait',
+        // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
+        pageMargins: [50, 60, 50, 60],
+        footer: {
+          columns: [
+            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+          ],
+          style: 'superMargin'
+        },
+
+        content: [
+          {
+            alignment: 'justify',
+            columns: [
+              {
+                image: 'coop.jpg',
+                width: 300
+              },
+              {
+                type: 'none',
+                alignment: 'right',
+                fontSize: 9,
+                ol: [
+                  'The Co-operative Bank of Kenya Limited',
+                  'Co-operative Bank House',
+                  'Haile Selassie Avenue',
+                  'P.O. Box 48231-00100 GPO, Nairobi',
+                  'Tel: (020) 3276100',
+                  'Fax: (020) 2227747/2219831',
+                  { text: 'www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                ]
+              },
+            ],
+            columnGap: 10
+          },
+          "Our Ref: PRELISTING/" + letter_data.cardacct + '/' + DATE,
+          '\n' + dateFormat(new Date(), 'dd-mmm-yyyy'),
+          '\n' + letter_data.cardname,
+          '' + letter_data.address + '-' + letter_data.rpcode,
+          letter_data.city,
+
+          '\nDear Sir/Madam',
+ 
+          {
+            text: '\nRE: PRE-LISTING NOTIFICATION ISSUED PURSUANT TO REGULATION 50(1)(a) OF THE CREDIT REFERENCE BUREAU REGULATIONS, 2013',
+            style: 'subheader'
+          },
+
+          { text: '\nWe wish to inform you that in line with the above Regulations, Banks, Microfinance Banks (MFBs) and the Deposit Protection Fund Board (DPFB) are required to share credit information of all their borrowers through licensed Credit Reference Bureaus (CRBs). ', alignment: 'justify' },
+
+          "\nA default in your card debt repayment will result in a negative impact on your credit record. If your card debt is classified as Non-Performing as per the Banking Act & Prudential Guidelines and/or as per the Microfinance Act, your credit profile at the CRBs will be adversely affected. ",
+
+          {
+            text: '\nPlease note that your card account number ' + letter_data.cardacct + ', card number ' + letter_data.cardnumber + ' is currently in default. It is outstanding at ' + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + 'DR with arrears of ' + numeral(Math.abs(letter_data.exp_pmnt)).format('0,0.00') + 'DR, having not paid the full installment(s) for 60 days. This card debt continues to accrue interest at a rate of 1.083% per month, on the daily outstanding balance and late payment fees at the rate of 5% on the arrears amount plus an excess fee of Kshs.1,000.00 monthly (if the total balance is above the limit).',
+            fontSize: 10, alignment: 'justify'
+          },
+
+          "\nWe hereby notify you that we will proceed to adversely list you with the CRBs if your card debt becomes non-performing. To avoid an adverse listing, you are advised to clear the outstanding arrears within 30 days from the date of this letter. Payment can be made via Mpesa Paybill No. 400200 Account No. CR " + letter_data.cardacct + " ",
+
+          "\nYou have a right of access to your credit report at the CRBs and you may dispute any erroneous information. You may request for your report by contacting the CRBs at the following addresses: ",
+  
+          { text: '\nYours sincerely, ' },
+          {
+            image: 'sign_rose.png',
+            width: 100,
+            height: 50
+          },
+          { text: 'ROSE KARAMBU  ' },
+          { text: 'COLLECTIONS SUPPORT MANAGER.' }
+
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            alignment: 'right',
+            margin: [0, 190, 0, 80]
+          },
+          subheader: {
+            fontSize: 12,
+            bold: true,
+            decoration: 'underline'
+          },
+          superMargin: {
+            margin: [20, 0, 40, 0],
+            fontSize: 8, alignment: 'center', opacity: 0.5
+          },
+          quote: {
+            italics: true
+          },
+          small: {
+            fontSize: 8
+          }
+        },
+        defaultStyle: {
+          fontSize: 10
+        }
+      }; // end dd
+
+      var options = {
+        // ...
       }
-      convert();
+
+      var pdfDoc = printer.createPdfKitDocument(dd, options);
+      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf"));
+      pdfDoc.end();
+
+      // send response
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf",
+        filename: letter_data.cardacct + DATE + "prelistingcc.pdf"
+      })
     } else {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'prelistingcc.docx'));
       res.json({
