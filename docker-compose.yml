@@ -1,11 +1,11 @@
 version: "3.3"
 services:
   docxletters:
-    image: migutak/docxletters:latest
+    image: migutak/docxletters:1.0.0
     container_name: docx
     restart: always
     volumes:
-      - d:/demands:/app/demands
+      - /home/ecollectadmin/demandletters/:/app/demands/
     environment:
       - FILEPATH=/app/demands/
     ports:
