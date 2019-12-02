@@ -1,20 +1,22 @@
-FROM node:10
+FROM node:10 AS appbuild
 
 # Create app directory
 RUN mkdir -p /app
 RUN mkdir -p /app/demands
-WORKDIR /app
+RUN mkdir -p /app/docxletters
+WORKDIR /app/docxletters
 
-#install pm2
-RUN npm install pm2 -g
-
-# Install app dependencies
-COPY package*.json ./
-
-RUN npm install
-
-# Bundle app source
 COPY . .
 
+FROM node:10.15.2-alpine
+RUN mkdir -p /app
+RUN mkdir -p /app/demands
+RUN mkdir -p /app/docxletters
+WORKDIR /app/docxletters
+
+COPY --from=appbuild /app/docxletters /app/docxletters
 EXPOSE 8004
-CMD [ "pm2-runtime", "index.js" ]
+
+CMD ["node", "index.js"]
+
+#  docker build -t migutak/docxletters:1.0.0 .

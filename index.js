@@ -39,7 +39,7 @@ app.use('/docx/prelistingremedial', prelistingremedial);
 
 router.get('/', function (req, res) {
     res.json({ message: 'Demand letters ready Home!' }); 
-  });
+});
   
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended: true}));
