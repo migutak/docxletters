@@ -420,16 +420,26 @@ router.post('/download', function (req, res) {
             }
 
             var pdfDoc = printer.createPdfKitDocument(dd, options);
-            pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf"));
+            // pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf"));
+            // pdfDoc.end();
+            // redo
+            writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf");
+            pdfDoc.pipe(writeStream);
             pdfDoc.end();
+            writeStream.on('finish', function () {
+                // do stuff with the PDF file
+                console.log('letter pdf created');
+                console.log("Stream finished.");
+                // send response
+                res.json({
+                    result: 'success',
+                    message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
+                    filename: accnumber_masked + DATE + "demand1.pdf",
+                    piped: true
+                })
+            });
 
-            // send response
-            res.json({
-                result: 'success',
-                message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
-                filename: accnumber_masked + DATE + "demand1.pdf",
-                piped: true
-            })
+
         } else {
             // pipe to remote
             /* client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", {
