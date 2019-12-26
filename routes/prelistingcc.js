@@ -312,7 +312,7 @@ router.post('/download', function (req, res) {
           letter_data.city,
 
           '\nDear Sir/Madam',
- 
+
           {
             text: '\nRE: PRE-LISTING NOTIFICATION ISSUED PURSUANT TO REGULATION 50(1)(a) OF THE CREDIT REFERENCE BUREAU REGULATIONS, 2013',
             style: 'subheader'
@@ -330,7 +330,7 @@ router.post('/download', function (req, res) {
           "\nWe hereby notify you that we will proceed to adversely list you with the CRBs if your card debt becomes non-performing. To avoid an adverse listing, you are advised to clear the outstanding arrears within 30 days from the date of this letter. Payment can be made via Mpesa Paybill No. 400200 Account No. CR " + letter_data.cardacct + " ",
 
           "\nYou have a right of access to your credit report at the CRBs and you may dispute any erroneous information. You may request for your report by contacting the CRBs at the following addresses: ",
-  
+
           { text: '\nYours sincerely, ' },
           {
             image: 'sign_rose.png',
@@ -374,15 +374,22 @@ router.post('/download', function (req, res) {
       }
 
       var pdfDoc = printer.createPdfKitDocument(dd, options);
-      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf"));
-      pdfDoc.end();
+      //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf"));
+      //pdfDoc.end();
 
-      // send response
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf",
-        filename: letter_data.cardacct + DATE + "prelistingcc.pdf"
-      })
+      // ensures response is sent only after pdf is created
+      writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "prelistingcc.pdf");
+      pdfDoc.pipe(writeStream);
+      pdfDoc.end();
+      writeStream.on('finish', function () {
+        // do stuff with the PDF file
+        // send response
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf",
+          filename: letter_data.cardacct + DATE + "prelistingcc.pdf"
+        })
+      });
     } else {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'prelistingcc.docx'));
       res.json({

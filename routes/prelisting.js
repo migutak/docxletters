@@ -56,7 +56,7 @@ router.post('/download', function (req, res) {
   const first4 = rawaccnumber.substring(0, 9);
   const last4 = rawaccnumber.substring(rawaccnumber.length - 4);
 
-  
+
   accnumber_masked = first4 + 'xxxxx';
   const document = new Document();
 
@@ -313,7 +313,7 @@ router.post('/download', function (req, res) {
         row = i + 1
         body2.push([DATA[i].productcode,
         DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance)).format('0,0.00') + ' DR'
-      ])
+        ])
       }
 
       body.push(['Loan Account Number', 'Principal Loan Balance', 'Accrued Interest on principal', 'Principal Arrears', 'Interest in Arrears', 'Penalty Interest', 'Days in arrears', 'Interest Rate per annum'])
@@ -325,8 +325,8 @@ router.post('/download', function (req, res) {
         DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR',
         DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR',
         DATA[i].currency + ' 0.00',
-        'Over 60 days',
-        '14%'
+          'Over 60 days',
+          '14%'
         ])
       }
 
@@ -394,7 +394,7 @@ router.post('/download', function (req, res) {
               'Copy by ordinary Mail'
             ]
           },
-          
+
           '\n' + letter_data.custname,
           letter_data.address + '-' + letter_data.postcode,
 
@@ -404,13 +404,13 @@ router.post('/download', function (req, res) {
             text: '\nREF: PRE-LISTING NOTIFICATION ISSUED PURSUANT TO REGULATION 50(1) (a) OF THE CREDIT REFERENCE BUREAU REGULATIONS, 2013:',
             style: 'subheader'
           },
-  
-  "\nWe wish to inform you that, in line with the above Regulations, Banks, Microfinance Banks (MFBs) and the Deposit Protection Fund Board (DPFB) are required to share credit information of all their borrowers through licensed Credit Reference Bureaus (CRBs).  ",
-  
-  "\nA default in loan repayment will result in a negative impact on your credit record. If your loan is classified as Non-Performing as per the Banking Act & Prudential Guidelines and/or as per the Microfinance Act, your credit profile at the CRBs will be adversely affected.   ",
-  
-  "\nPlease note that your loans are currently in default with outstanding balances and arrears, having not paid the full instalments. These loans continue to accrue interest at various rates per annum. Here below please find the loan/overdrawn particulars: ",
-  
+
+          "\nWe wish to inform you that, in line with the above Regulations, Banks, Microfinance Banks (MFBs) and the Deposit Protection Fund Board (DPFB) are required to share credit information of all their borrowers through licensed Credit Reference Bureaus (CRBs).  ",
+
+          "\nA default in loan repayment will result in a negative impact on your credit record. If your loan is classified as Non-Performing as per the Banking Act & Prudential Guidelines and/or as per the Microfinance Act, your credit profile at the CRBs will be adversely affected.   ",
+
+          "\nPlease note that your loans are currently in default with outstanding balances and arrears, having not paid the full instalments. These loans continue to accrue interest at various rates per annum. Here below please find the loan/overdrawn particulars: ",
+
           '\n',
 
           {
@@ -423,7 +423,7 @@ router.post('/download', function (req, res) {
           '\n',
           '\nThis is broken down as follows: ',
           '\n',
-          
+
           {
             alignment: 'left',
             fontSize: 9,
@@ -529,16 +529,22 @@ router.post('/download', function (req, res) {
       }
 
       var pdfDoc = printer.createPdfKitDocument(dd, options);
-      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf"));
+      //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf"));
+      //pdfDoc.end();
+      // ensures response is sent only after pdf is created
+      writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf");
+      pdfDoc.pipe(writeStream);
       pdfDoc.end();
-
-      // send response
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf",
-        filename: accnumber_masked + DATE + "prelisting.pdf",
-        piped: true
-      })
+      writeStream.on('finish', function () {
+        // do stuff with the PDF file
+        // send response
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + accnumber_masked + DATE + "prelisting.pdf",
+          filename: accnumber_masked + DATE + "prelisting.pdf",
+          piped: true
+        })
+      });
     } else {
       res.json({
         result: 'success',

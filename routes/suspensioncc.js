@@ -262,11 +262,11 @@ router.post('/download', function (req, res) {
           },
 
           "\nYour Co-opcard offers many exclusive benefits in addition to the unsecured credit facility. In order for you to enjoy these benefits to the full, proper maintenance of the account is vital.  We regret this has not been the case.",
- 
+
           "\nYour account has been suspended for non-payment of your bills and currently your account reflects a balance of Kshs. " + numeral(Math.abs(letter_data.out_balance)).format('0,0.00') + "DR and this does not include any bills that we may not have received. The account also continues to accrue 1.083% interest and 5% late payment charges on outstanding balance and overdue amount every month respectively.",
-  
+
           "\nWe are now giving you notice that your personal information and credit account details will be disclosed to the Credit Reference Bureau, in accordance with the Banking Act and CRB regulations 2013. Be advised that any credit defaults will remain on your credit file for up to five years from the date of settlement. ",
-  
+
 
           { text: '\nYours sincerely, ' },
           {
@@ -311,15 +311,22 @@ router.post('/download', function (req, res) {
       }
 
       var pdfDoc = printer.createPdfKitDocument(dd, options);
-      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf"));
-      pdfDoc.end();
+      //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf"));
+      //pdfDoc.end();
 
-      // send response
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf",
-        filename: letter_data.cardacct + DATE + "suspension.pdf"
-      })
+      // ensures response is sent only after pdf is created
+      writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "suspension.pdf");
+      pdfDoc.pipe(writeStream);
+      pdfDoc.end();
+      writeStream.on('finish', function () {
+        // do stuff with the PDF file
+        // send response
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.cardacct + DATE + "suspension.pdf",
+          filename: letter_data.cardacct + DATE + "suspension.pdf"
+        })
+      });
     } else {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'suspension.docx'));
       res.json({
