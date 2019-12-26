@@ -371,16 +371,21 @@ router.post('/download', function (req, res) {
       }
 
       var pdfDoc = printer.createPdfKitDocument(dd, options);
-      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf"));
+      //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf"));
+      //pdfDoc.end();
+      // ensures response is sent only after pdf is created
+      writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf");
+      pdfDoc.pipe(writeStream);
       pdfDoc.end();
-
-      // send response
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf",
-        filename: accnumber_masked + DATE + "demand2.pdf",
-        piped: true
-      })
+      writeStream.on('finish', function () {
+        // do stuff with the PDF file
+        // send response
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + accnumber_masked + DATE + "demand2.pdf",
+          filename: accnumber_masked + DATE + "demand2.pdf"
+        })
+      });
     } else {
       res.json({
         result: 'success',

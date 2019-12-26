@@ -5,8 +5,9 @@ services:
     container_name: docx
     restart: always
     volumes:
-      - /home/ecollectadmin/demandletters/:/app/demands/
+      - /app/nfsmount/demandletters/:/app/nfsmount/demandletters/
     environment:
-      - FILEPATH=/app/demands/
+      - FILEPATH=/app/nfsmount/demandletters/
+      - IMAGEPATH=/app/docxletters/routes/
     ports:
       - "8004:8004"

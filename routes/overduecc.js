@@ -307,8 +307,8 @@ router.post('/download', function (req, res) {
 
           {
             text: ['\nPayment can be made via ',
-                    { text: 'Mpesa Paybill No. 400200 Account No. CR ' + letter_data.cardacct, bold: true },
-                  ]
+              { text: 'Mpesa Paybill No. 400200 Account No. CR ' + letter_data.cardacct, bold: true },
+            ]
           },
 
           {
@@ -364,15 +364,22 @@ router.post('/download', function (req, res) {
       }
 
       var pdfDoc = printer.createPdfKitDocument(dd, options);
-      pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf"));
-      pdfDoc.end();
+      //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf"));
+      //pdfDoc.end();
 
-      // send response
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf",
-        filename: letter_data.cardacct + DATE + "overduecc.pdf"
-      })
+      // ensures response is sent only after pdf is created
+      writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "overduecc.pdf");
+      pdfDoc.pipe(writeStream);
+      pdfDoc.end();
+      writeStream.on('finish', function () {
+        // do stuff with the PDF file
+        // send response
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf",
+          filename: letter_data.cardacct + DATE + "overduecc.pdf"
+        })
+      });
     } else {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'overdue.docx'));
       res.json({
