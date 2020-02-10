@@ -1,9 +1,29 @@
-apiVersion: extensions/v1beta1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-docxletters
+  labels:
+    app: svc-docxletters
+spec:
+  selector:
+    app: docxletters
+  ports:
+  - port: 8004
+    protocol: TCP
+    nodePort: 30061
+  type: NodePort
+
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: docx-deployment
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+        app: docxletters
   template:
     metadata:
       labels:
@@ -11,7 +31,20 @@ spec:
     spec:
       containers:
       - name: docx
-        image: migutak/docxletters:latest
+        image: migutak/docxletters:1.0.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8004
+        volumeMounts:
+        - name: vol
+          mountPath: /app/nfsmount/demandletters/
+        env:
+        - name: FILEPATH
+          valueFrom:
+            configMapKeyRef:
+              name: ecol-configmap
+              key: FILEPATH
+      volumes:
+        - name: vol
+          persistentVolumeClaim:
+            claimName: docx-pvc

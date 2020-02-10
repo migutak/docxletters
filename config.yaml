@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecol-configmap
+  namespace: default
+data:
+  FILEPATH: /app/nfsmount/demandletters/

@@ -88,7 +88,7 @@ router.post('/download', function (req, res) {
 
     //logo start
     if (INCLUDELOGO == true) {
-        document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
+        document.createImage(fs.readFileSync("coop.jpg"), 350, 60, {
             floating: {
                 behindDocument: true,
                 horizontalPosition: {

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: docx-pv 
+spec:
+  capacity:
+    storage: 5Gi 
+  accessModes:
+    - ReadWriteMany 
+  persistentVolumeReclaimPolicy: Retain 
+  hostPath: 
+    # path: /app/nfsmount/demandletters
+    path: D:\\nfsmount\\demandletters
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docx-pvc  
+spec:
+  accessModes:
+  - ReadWriteMany      
+  resources:
+     requests:
+       storage: 5Gi    
