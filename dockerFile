@@ -2,7 +2,7 @@ FROM node:10 AS appbuild
 
 # Create app directory
 RUN mkdir -p /app
-RUN mkdir -p /app/nfsmount/demandletters
+RUN mkdir -p /app/nfs/demandletters
 RUN mkdir -p /app/docxletters
 WORKDIR /app/docxletters
 
@@ -10,7 +10,7 @@ COPY . .
 
 FROM node:10.15.2-alpine
 RUN mkdir -p /app
-RUN mkdir -p /app/nfsmount/demandletters
+RUN mkdir -p /app/nfs/demandletters
 RUN mkdir -p /app/docxletters
 WORKDIR /app/docxletters
 
