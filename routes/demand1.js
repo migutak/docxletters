@@ -373,7 +373,7 @@ router.post('/download', function (req, res) {
                     },
 
                     {
-                        text: '\nThe purpose of this letter therefore is to DEMAND immediate payment for the amount in arrears. Kindly ensure that the same is paid within fourteen days (14) from the date hereof. ',
+                        text: '\nThe purpose of this letter therefore is to DEMAND immediate payment for the amount in arrears. Kindly ensure that the same is paid within ' + NOTICE + ' from the date hereof. ',
                         fontSize: 10, alignment: 'justify'
                     },
 
