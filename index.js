@@ -21,7 +21,9 @@ var day40 = require('./routes/day40');
 var day90 = require('./routes/day90');
 var day30 = require('./routes/day30');
 var prelistingremedial = require('./routes/prelistingremedial');
-
+var ipfcancellation = require('./routes/ipfcancellation');
+var ipfcancellationwithsend = require('./routes/ipfcancellationwithsend');
+var revocation = require('./routes/revocation');
 
 app.use('/docx/demand2', demand2);
 app.use('/docx/demand1', demand1);
@@ -36,6 +38,9 @@ app.use('/docx/day40', day40);
 app.use('/docx/day90', day90);
 app.use('/docx/day30', day30);
 app.use('/docx/prelistingremedial', prelistingremedial);
+app.use('/docx/ipfcancellation', ipfcancellation);
+app.use('/docx/ipfcancellationwithsend', ipfcancellationwithsend);
+app.use('/docx/revocation', revocation);
 
 router.get('/', function (req, res) {
     res.json({ message: 'Demand letters ready Home!' }); 

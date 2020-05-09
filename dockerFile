@@ -19,5 +19,5 @@ EXPOSE 8004
 
 CMD ["node", "index.js"]
 
-#  docker build -t migutak/docxletters:1.0.0 .
+#  docker build -t 52.117.54.217:5000/docxletters:1.0.0 .
 
