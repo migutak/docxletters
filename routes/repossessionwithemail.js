@@ -38,7 +38,7 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-    console.log(letter_data)
+
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
 
@@ -79,65 +79,93 @@ router.post('/download', function (req, res) {
                 ],
                 columnGap: 10
             },
-            '',
-            '\n' + DATE,
-            '\n' + letter_data.insurancecompany,
-            '' + letter_data.insuranceaddress,
-            '' + letter_data.postcode,
-            ' Head Office',
-            '\nNAIROBI',
-
-            '\nAttn: Underwriting Manager',
-
-            '\nDear Sir/Madam',
             {
-                text: '\nRE: CANCELLATION \n' + letter_data.custname + '\nPOLICY NO: ' + letter_data.policynumber,
-                style: 'subheader'
+                style: 'tableExample',
+                table: {
+                    headerRows: 1,
+                    widths: [250, '*'],
+                    body: [
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
+                        ['To: Auctioneers name', 'Valid up to: ' + DATEEXPIRY],
+                        ['Nairobi', ''],
+                        ['', ''],
+                        ['Asset Finance Agreement No.', letter_data.customerNumber],
+                        ['', ''],
+                        ['Hirer’s Name ', ':     ' + letter_data.ipfBalance],
+                        ['Unit Financed ', ':     ' + letter_data.vehicleMake + ' & ' + letter_data.vehicleModel],
+                        ['Registration No ', ':     ' + letter_data.vehicleRegnumber],
+                    ]
+                },
+                layout: 'noBorders',
+
+            },
+            '\n',
+
+            {
+                text: [
+                    '\nAccording to our records, the monthly rental of the above Asset finance Agreement is now in arrears. The total amount due is ',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.ipfBalance)).format('0,0.00'), fontSize: 10, bold: true },
+                    ' & ',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.afBalance)).format('0,0.00'), fontSize: 10, bold: true },
+                    ' and ',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.odBalance)).format('0,0.00'), fontSize: 10, bold: true },
+                    ' and others.',
+                ]
+
             },
             {
                 text: [
-                    '\nWe herein notify you to cancel the insurance policy for the above named client due to unpaid instalments. Give us a refund cheque for the unutilized premiums of ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.refundamount)).format('0,0.00'), fontSize: 10, bold: true }
+                    'A further rental of ',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.nextScheduleAmount)).format('0,0.00'), fontSize: 10, bold: true },
+                    ' becomes due on ',
+                    { text: letter_data.nextScheduleDate, fontSize: 10, bold: true },
+                    ' cumulatively amounting to ',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
+                    '.',
+                ]
+            },
+            {
+                text: [
+                    '\nPlease approach the above named Hirer on our behalf and collect the total sum of ',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
+                    ' plus your own charges, failing which you may take this letter as your authority to effect immediate re-possession of the above/equipment without further reference to us. HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED. From our records, we are able to give the following additional information regarding this Agreement, which may assist you in your task of locating the hirer and/or the motor vehicle/equipment:-',
                 ]
             },
             '\n',
+
             {
-                alignment: 'justify',
-                fontSize: 10,
                 table: {
+                    headerRows: 1,
+                    widths: [200, '*'],
                     body: [
-                        [{ text: 'Premium Amount', style: 'tableHeader', alignment: 'left' }, { text: 'Broker', style: 'tableHeader', alignment: 'left' }, { text: 'Date paid', style: 'tableHeader', alignment: 'left' }, { text: 'Days utilized', style: 'tableHeader', alignment: 'left' }, { text: 'Days Unutilized', style: 'tableHeader', alignment: 'left' }, { text: 'Refund amount', style: 'tableHeader', alignment: 'left' }],
-                        [numeral(Math.abs(letter_data.oustbalance)).format('0,0.00'), letter_data.broker, letter_data.origdate, letter_data.daysutilized, letter_data.daysunutilized, numeral(Math.abs(letter_data.refundamount)).format('0,0.00')]
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
+                        ['Postal Address', ':      ' + letter_data.postaladdress || 'N/A'],
+                        ['Telephone', ':     ' + letter_data.phoneNumber || 'N/A'],
+                        ['Physical Address/Location', ':     ' + letter_data.place || 'N/A'],
+                        ['Type of Business', ':      ' + letter_data.typeofbusiness || 'N/A'],
+                        ['Bankers and Branch', ':     ' + letter_data.branchName || 'N/A'],
+                        ['Purpose of Vehicle', ':     ' + letter_data.purposeofVehicle || 'N/A'],
+                        ['Guarantors', ':     ' + letter_data.Guarantors || 'N/A'],
+                        ['Guarantors Address', ':     ' + letter_data.GuarantorsAddress || 'N/A'],
+                        ['Chassis No.', ':     ' + letter_data.chasisNumber || 'N/A'],
+                        ['Engine No.', ':     ' + letter_data.EngineNo || 'N/A'],
+                        ['Any other information', ':     ' + letter_data.otherInformation || 'N/A']
                     ]
                 },
-                layout: {
-                    fillColor: function (rowIndex, node, columnIndex) {
-                        return (rowIndex % 2 === 0) ? '#CCCCCC' : null;
-                    }
-                }
+                layout: 'noBorders',
+
             },
 
-            {
-                text: '\nThis notice expires on the ' + DATEEXPIRY.toUpperCase() + ' which will be the rate review date for any demand arrears that will be owing to the bank.',
-                fontSize: 10, alignment: 'justify'
-            },
-
-            { text: '\nRefund payment should be made out to the below Co-operative Bank Account. ', fontSize: 10, alignment: 'justify' },
-            { text: '\nAccount Name: ' + letter_data.custname, fontSize: 10, alignment: 'left' },
-            { text: 'Branch: ' + letter_data.branchname, fontSize: 10, alignment: 'left' },
-            { text: 'Account No: 01694' + letter_data.custnumber + '00 ', fontSize: 10, alignment: 'left' },
-
-            { text: '\nYour co-operation is highly appreciated. ', fontSize: 11, alignment: 'left' },
+            { text: '\n\nVehicle tracked by: ' + letter_data.trackingCompany, fontSize: 10, alignment: 'left' },
 
             { text: '\nYours Faithfully,' },
-            { text: '\n\nDAVID MITHIA,                                                                           JAMES KARANJA', style: 'tableHeader' },
-            { text: 'REMEDIAL CREDIT DEPARTMENT                                          FOR HEAD – MSME REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
-            { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+            { text: '\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
+            { text: 'This letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.custname },
-            { text: '' + letter_data.branchname }
+            { text: '' + letter_data.customerName },
+            { text: '' + letter_data.postaladdress }
         ],
 
         styles: {
@@ -177,23 +205,23 @@ router.post('/download', function (req, res) {
     }
 
     var pdfDoc = printer.createPdfKitDocument(docDefinition, options);
-    writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf");
+    writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf");
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
     writeStream.on('finish', function () {
         res.json({
             result: 'success',
-            message: LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
-            filename: letter_data.accnumber + DATE + "ipfcancellation.pdf"
+            message: LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
+            filename: letter_data.accnumber + DATE + "repossession.pdf"
         })
 
         // send email
-        emaildata.custname = letter_data.custname,
-            emaildata.email = letter_data.insuranceemail,
+        emaildata.customerName = letter_data.customerName,
+            emaildata.email = letter_data.auctioneerEmail,
             emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
-            emaildata.policynumber = letter_data.policynumber,
-            emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
-            emaildata.cc = [letter_data.emailaddress, letter_data.username];
+            emaildata.vehicleRegnumber = letter_data.vehicleRegnumber,
+            emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
+            emaildata.cc = [letter_data.customerEmail];
 
 
         let transporter = nodemailer.createTransport({
@@ -219,10 +247,10 @@ router.post('/download', function (req, res) {
             from: emaildata.branchemail,
             to: emaildata.email,
             cc: emaildata.cc,
-            subject: "IPF Cancellation - " + emaildata.custname + " ( Policy No: " + emaildata.policynumber + " )",
+            subject: "Repossession Order - " + emaildata.customerName + " VEHICLE REG NO.: " + emaildata.vehicleRegnumber,
             // text: "Text. ......",
             html: '<h5>Dear Sir/Madam:</h5>' +
-                'Please find attached IPF cancellation letter for the above customer.<br>' +
+                'Please find attached repossession order for the above customer.<br>' +
                 '<p>Kindly note this is an automated delivery system; do not reply to this email address</p>' +
                 '<br>' +
                 'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
@@ -254,6 +282,7 @@ router.post('/download', function (req, res) {
                 info: info
             })
         })
+
     });
 });
 

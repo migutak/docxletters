@@ -24,6 +24,9 @@ var prelistingremedial = require('./routes/prelistingremedial');
 var ipfcancellation = require('./routes/ipfcancellation');
 var ipfcancellationwithsend = require('./routes/ipfcancellationwithsend');
 var revocation = require('./routes/revocation');
+var repossession = require('./routes/repossession');
+var repossessionwithemail = require('./routes/repossessionwithemail');
+var release = require('./routes/release');
 
 app.use('/docx/demand2', demand2);
 app.use('/docx/demand1', demand1);
@@ -41,6 +44,9 @@ app.use('/docx/prelistingremedial', prelistingremedial);
 app.use('/docx/ipfcancellation', ipfcancellation);
 app.use('/docx/ipfcancellationwithsend', ipfcancellationwithsend);
 app.use('/docx/revocation', revocation);
+app.use('/docx/repossession', repossession);
+app.use('/docx/repossessionwithemail', repossessionwithemail);
+app.use('/docx/release', release);
 
 router.get('/', function (req, res) {
     res.json({ message: 'Demand letters ready Home!' }); 
