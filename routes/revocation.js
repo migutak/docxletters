@@ -1,14 +1,13 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
 const fs = require('fs');
-var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
+const nodemailer = require("nodemailer");
 const cors = require('cors');
 
 var data = require('./data.js');
-
+const emaildata = {};
 const LETTERS_DIR = data.filePath;
 
 var fonts = {
@@ -40,9 +39,6 @@ router.post('/download', function (req, res) {
     const letter_data = req.body;
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
-
-    var DATEEXPIRY = dateFormat(date1.setDate(date1.getDate() + 30), "dd-mmm-yyyy");
-
 
 
     var docDefinition = {
@@ -163,6 +159,75 @@ router.post('/download', function (req, res) {
             result: 'success',
             message: LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf",
             filename: letter_data.accnumber + DATE + "revocation.pdf"
+        });
+
+        // send email
+        emaildata.custname = letter_data.custname,
+            emaildata.email = letter_data.insuranceemail,
+            emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
+            emaildata.policynumber = letter_data.policynumber,
+            emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf",
+            emaildata.cc = [letter_data.emailaddress, letter_data.username];
+
+        console.log(emaildata);
+
+        let transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: 'abdiel.funk26@ethereal.email',
+                pass: '3HWTWq9gm2TgDtssNP'
+            }
+        });
+
+        // verify connection configuration
+        transporter.verify(function (error, success) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log("Server is ready to take our messages");
+            }
+        });
+
+        var mailOptions = {
+            from: emaildata.branchemail,
+            to: emaildata.email,
+            cc: emaildata.cc,
+            subject: "IPF Reinstatement - " + emaildata.custname + " ( Policy No: " + emaildata.policynumber + " )",
+            // text: "Text. ......",
+            html: '<h5>Dear Sir/Madam:</h5>' +
+                'Please find attached IPF reinstatement letter for the above customer.<br>' +
+                '<p>Kindly note this is an automated delivery system; do not reply to this email address</p>' +
+                '<br>' +
+                'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
+                'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
+                '<br>' +
+                'Best Regards,<br>' +
+                'Co-operative Bank of Kenya' +
+                '<br> <br>',
+            attachments: [
+                {
+                    path: emaildata.path
+                }
+            ]
+        };
+
+        // send email
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                res.json({
+                    result: 'fail',
+                    message: "message not sent"
+                })
+            }
+            console.log("info > ", info)
+            res.json({
+                result: 'success',
+                message: "message sent",
+                info: info
+            })
         })
     });
 
