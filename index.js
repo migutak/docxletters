@@ -27,6 +27,10 @@ var revocation = require('./routes/revocation');
 var repossession = require('./routes/repossession');
 var repossessionwithemail = require('./routes/repossessionwithemail');
 var release = require('./routes/release');
+var investigations = require('./routes/investigations');
+var investigationswithemail = require('./routes/investigationswithemail');
+var valuation = require('./routes/valuation');
+var valuationwithemail = require('./routes/valuationwithemail');
 
 app.use('/docx/demand2', demand2);
 app.use('/docx/demand1', demand1);
@@ -47,6 +51,10 @@ app.use('/docx/revocation', revocation);
 app.use('/docx/repossession', repossession);
 app.use('/docx/repossessionwithemail', repossessionwithemail);
 app.use('/docx/release', release);
+app.use('/docx/investigators', investigations);
+app.use('/docx/investigatorswithemail', investigationswithemail);
+app.use('/docx/valuation', valuation);
+app.use('/docx/valuationwithemail', valuationwithemail);
 
 router.get('/', function (req, res) {
     res.json({ message: 'Demand letters ready Home!' }); 

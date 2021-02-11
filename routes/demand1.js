@@ -198,7 +198,6 @@ router.post('/download', function (req, res) {
     document.createParagraph("Yours Faithfully, ");
 
     document.createParagraph(" ");
-    // document.createParagraph(letter_data.manager);
     document.createParagraph("BRANCH MANAGER ");
     document.createParagraph(letter_data.branchname);
 
