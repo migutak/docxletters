@@ -9,8 +9,7 @@ spec:
     - ReadWriteMany 
   persistentVolumeReclaimPolicy: Retain 
   hostPath: 
-    # path: /app/nfsmount/demandletters
-    path: D:\\nfsmount\\demandletters
+    path: /app/nfsmount/demandletters
 
 ---
 apiVersion: v1

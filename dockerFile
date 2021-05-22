@@ -1,23 +1,19 @@
-FROM node:10 AS appbuild
+FROM node:16-buster-slim
 
-# Create app directory
-RUN mkdir -p /app
 RUN mkdir -p /app/nfs/demandletters
 RUN mkdir -p /app/docxletters
 WORKDIR /app/docxletters
 
-COPY . .
+RUN chown node:node -R /app
+USER node
+# Install app dependencies
+COPY --chown=node package*.json ./
+RUN npm install --production
+COPY --chown=node . .
 
-FROM node:10.15.2-alpine
-RUN mkdir -p /app
-RUN mkdir -p /app/nfs/demandletters
-RUN mkdir -p /app/docxletters
-WORKDIR /app/docxletters
-
-COPY --from=appbuild /app/docxletters /app/docxletters
 EXPOSE 8004
 
 CMD ["node", "index.js"]
 
-#  docker build -t 52.117.54.217:5000/docxletters:1.0.0 .
+#  docker build -t migutak/docxletters:4.1 .
 
