@@ -1,15 +1,11 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
-const word2pdf = require('word2pdf-promises');
 const cors = require('cors');
-var client = require('scp2');
 
 var data = require('./data.js');
 

@@ -1,15 +1,12 @@
 var express = require('express');
 var router = express.Router();
 const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
-const word2pdf = require('word2pdf-promises');
 const cors = require('cors');
-var client = require('scp2');
 
 var data = require('./data.js');
 
@@ -443,31 +440,6 @@ router.post('/download', function (req, res) {
                 })
             });
         } else {
-            // pipe to remote
-            /* client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", {
-                 host: '172.16.204.71',
-                 username: 'vomwega',
-                 password: 'Stkenya.123',
-                 path: '/tmp/demandletters/'
-             }, function(err) {
-                 if (err) {
-                     console.log(err);
-                     res.json({
-                         result: 'error',
-                         message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.docx",
-                         filename: accnumber_masked + DATE + "demand1.docx",
-                         piped: false
-                     })
-                 } else {
-                     console.log('file moved!');
-                     res.json({
-                         result: 'success',
-                         message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.docx",
-                         filename: accnumber_masked + DATE + "demand1.docx",
-                         piped: true
-                     })
-                 }
-             })*/
 
             res.json({
                 result: 'success',
