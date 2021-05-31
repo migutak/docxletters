@@ -1,8 +1,7 @@
 const express = require('express');
 const app = express();
-//const docx = require('docx');
-//const fs = require('fs');
-const bodyParser = require("body-parser");
+var morgan = require('morgan');
+const ecsFormat = require('@elastic/ecs-morgan-format');
 const router = express.Router();
 const cors = require('cors')
 
@@ -56,15 +55,16 @@ app.use('/docx/valuation', valuation);
 app.use('/docx/valuationwithemail', valuationwithemail);
 
 router.get('/', function (req, res) {
-    res.json({ message: 'Demand letters ready Home!' }); 
+  res.json({ message: 'Demand letters ready Home!' });
 });
-  
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({extended: true}));
-  app.use(cors())
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(morgan(ecsFormat()));
 
-  //add the router
+app.use(cors())
+
+//add the router
 app.use('/docx', router);
 app.listen(process.env.port || 8004);
 
