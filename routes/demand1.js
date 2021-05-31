@@ -4,7 +4,6 @@ const app = express();
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const cors = require('cors');
 
@@ -36,13 +35,10 @@ const {
     HorizontalPositionAlign
 } = docx;
 
-router.use(bodyParser.urlencoded({
-    extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
 router.use(cors());
-
 
 router.get('/', function (req, res) {
     res.json({ message: 'Demand 1 letter is ready! on app01' });
@@ -227,53 +223,7 @@ router.post('/download', function (req, res) {
         //conver to pdf
         // if pdf format
         if (letter_data.format == 'pdf') {
-            /*const convert = () => {
-               word2pdf.word2pdf(path.join(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx"))
-                    .then(data => {
-                        fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + 'demand1.pdf', data);
-                        
-                        // pipe to remote
-                        /*client.scp(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf", {
-                            host: '172.16.204.71',
-                            username: 'vomwega',
-                            password: 'Stkenya.123',
-                            path: '/tmp/demandletters/'
-                        }, function(err) {
-                            if (err) {
-                                console.log(err);
-                                res.json({
-                                    result: 'error',
-                                    message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.pdf",
-                                    filename: accnumber_masked + DATE + "demand1.pdf",
-                                    piped: false
-                                })
-                            } else {
-                                console.log('file moved!');
-                                res.json({
-                                    result: 'success',
-                                    message:  '/tmp/demandletters/' + accnumber_masked + DATE + "demand1.pdf",
-                                    filename: accnumber_masked + DATE + "demand1.pdf",
-                                    piped: true
-                                })
-                            }
-                        })
-
-                        res.json({
-                            result: 'success',
-                            message:  LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
-                            filename: accnumber_masked + DATE + "demand1.pdf",
-                            piped: true
-                        })
-
-                    }, error => {
-                        console.log('error ...', error)
-                        res.json({
-                            result: 'error',
-                            message: 'Exception occured'
-                        });
-                    })
-            }*/
-            // convert();
+           
             var body = [];
             body.push(['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'])
             for (i = 0; i < DATA.length; i++) {

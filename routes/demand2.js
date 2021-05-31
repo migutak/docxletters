@@ -3,10 +3,8 @@ var router = express.Router();
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const cors = require('cors');
-
 var data = require('./data.js');
 
 // Define font files
@@ -32,11 +30,9 @@ const {
   TextRun
 } = docx;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
 router.use(cors());
 
 router.post('/download', function (req, res) {
