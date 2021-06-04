@@ -34,7 +34,7 @@ router.use(cors())
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
+  const GURARANTORS = req.body.guarantors || [];
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");

@@ -47,7 +47,7 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-    const GUARANTORS = req.body.guarantors;
+    const GUARANTORS = req.body.guarantors || [];
     const INCLUDELOGO = req.body.showlogo;
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "dd-mmm-yyyy");

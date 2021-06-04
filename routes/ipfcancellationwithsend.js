@@ -197,12 +197,12 @@ router.post('/download', function (req, res) {
 
 
         let transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
+            host: 'smtp.office365.com',
             port: 587,
             secure: false, // true for 465, false for other ports
             auth: {
-                user: 'abdiel.funk26@ethereal.email',
-                pass: '3HWTWq9gm2TgDtssNP'
+                user: 'ecollect@co-opbank.co.ke',
+                pass: 'abcd.123'
             }
         });
 
@@ -216,7 +216,7 @@ router.post('/download', function (req, res) {
         });
 
         var mailOptions = {
-            from: emaildata.branchemail,
+            from: 'ecollect@co-opbank.co.ke',
             to: emaildata.email,
             cc: emaildata.cc,
             subject: "IPF Cancellation - " + emaildata.custname + " ( Policy No: " + emaildata.policynumber + " )",
