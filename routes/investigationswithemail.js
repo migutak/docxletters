@@ -181,22 +181,14 @@ router.post('/download', function (req, res) {
             emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "investigators.pdf"
 
 
-        /*let transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
+        let transporter = nodemailer.createTransport({
+            host: 'smtp.office365.com',
             port: 587,
             secure: false, // true for 465, false for other ports
             auth: {
-                user: 'abdiel.funk26@ethereal.email',
-                pass: '3HWTWq9gm2TgDtssNP'
+                user: 'ecollect@co-opbank.co.ke',
+                pass: 'abcd.123'
             }
-        });*/
-
-        let transporter = nodemailer.createTransport({
-            host: '192.168.0.39',
-            port: 25,
-            secure: false, // true for 465, false for other ports
-            tls: { rejectUnauthorized: false },
-            debug: true
         });
 
 
@@ -210,7 +202,7 @@ router.post('/download', function (req, res) {
         });
 
         var mailOptions = {
-            from: 'Collection Support <collectionssupport@co-opbank.co.ke>',
+            from: 'ecollect@co-opbank.co.ke',
             to: letter_data.serviceprovideremail,
             subject: "Instruction to investigate - " + letter_data.custname,
             // text: "Text. ......",

@@ -23,19 +23,11 @@ const {
 router.use(express.urlencoded({ extended: true }));
 router.use(express.json());
 
-router.use(cors())
-
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
+  const GURARANTORS = req.body.guarantors || [];
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "isoDate");
