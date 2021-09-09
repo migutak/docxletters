@@ -368,7 +368,7 @@ router.post('/download', function (req, res) {
       //pdfDoc.end();
 
       // ensures response is sent only after pdf is created
-      writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "overduecc.pdf");
+      writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf");
       pdfDoc.pipe(writeStream);
       pdfDoc.end();
       writeStream.on('finish', function () {
