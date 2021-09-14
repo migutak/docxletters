@@ -38,7 +38,6 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-    console.log(letter_data)
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
 
@@ -83,7 +82,6 @@ router.post('/download', function (req, res) {
             '\n' + DATE,
             '\n' + letter_data.insuco,
             '' + letter_data.insuaddress,
-            '' + letter_data.postcode,
             ' Head Office',
             '\nNAIROBI',
 
@@ -189,22 +187,22 @@ router.post('/download', function (req, res) {
 
         // send email
         emaildata.custname = letter_data.clientname,
-            emaildata.email = letter_data.insuemail,
+            emaildata.email = letter_data.insuranceemail,
             emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
             emaildata.policynumber = letter_data.policynumber,
             emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
             emaildata.cc = [letter_data.emailaddress, letter_data.username];
 
 
-            let transporter = nodemailer.createTransport({
-                host: 'smtp.office365.com',
-                port: 587,
-                secure: false, // true for 465, false for other ports
-                auth: {
-                    user: 'ecollect@co-opbank.co.ke',
-                    pass: 'abcd.123'
-                }
-            });
+        let transporter = nodemailer.createTransport({
+            host: 'smtp.office365.com',
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: 'ecollect@co-opbank.co.ke',
+                pass: 'abcd.123'
+            }
+        });
 
         // verify connection configuration
         transporter.verify(function (error, success) {
@@ -219,7 +217,7 @@ router.post('/download', function (req, res) {
             from: 'ecollect@co-opbank.co.ke',
             to: emaildata.email,
             cc: emaildata.cc,
-            subject: "IPF Cancellation - " + emaildata.custname + " ( Policy No: " + emaildata.policynumber + " )",
+            subject: "IPF Cancellation - " + emaildata.clientname + " ( Policy No: " + emaildata.policynumber + " )",
             // text: "Text. ......",
             html: '<h5>Dear Sir/Madam:</h5>' +
                 'Please find attached IPF cancellation letter for the above customer.<br>' +
