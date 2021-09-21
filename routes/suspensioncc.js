@@ -186,17 +186,17 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   // sign
 
-  document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 70);
+  //document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 70);
 
   //sign
   document.createParagraph(" ");
-  const sign = new TextRun("ROSE KARAMBU ");
+  const sign = new TextRun(" ");
   const psign = new Paragraph();
   sign.size(24);
   psign.addRun(sign);
   document.addParagraph(psign);
 
-  const signtext = new TextRun("COLLECTIONS SUPPORT MANAGER.");
+  const signtext = new TextRun("BRANCH MANAGER.");
   const paragraphsigntext = new Paragraph();
   signtext.bold();
   signtext.underline();
@@ -270,12 +270,12 @@ router.post('/download', function (req, res) {
 
           { text: '\nYours sincerely, ' },
           {
-            image: 'sign_rose.png',
+            //image: 'sign_rose.png',
             width: 100,
             height: 50
           },
-          { text: 'ROSE KARAMBU  ' },
-          { text: 'COLLECTIONS SUPPORT MANAGER.' }
+          { text: '  ' },
+          { text: 'BRANCH MANAGER.' }
 
         ],
         styles: {

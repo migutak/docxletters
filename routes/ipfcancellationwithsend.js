@@ -190,7 +190,7 @@ router.post('/download', function (req, res) {
         // send email
         emaildata.custname = letter_data.clientname,
             emaildata.email = letter_data.insuemail,
-            emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
+            emaildata.branchemail = 'E-Collect <ecollect@co-opbank.co.ke>',
             emaildata.policynumber = letter_data.policynumber,
             emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
             emaildata.cc = [letter_data.emailaddress, letter_data.username];
@@ -200,9 +200,10 @@ router.post('/download', function (req, res) {
                 host: 'smtp.office365.com',
                 port: 587,
                 secure: false, // true for 465, false for other ports
+                tls: { rejectUnauthorized: false },
                 auth: {
-                    user: 'ecollect@co-opbank.co.ke',
-                    pass: 'abcd.123'
+                    user: data.user,
+                    pass: data.pass
                 }
             });
 
