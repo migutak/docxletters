@@ -229,7 +229,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Credit Management Division.                                       Credit Management Division.");
 
 
-  if (GURARANTORS.length > 0) {
+  if (GURARANTORS?.length > 0) {
     document.createParagraph("cc: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
@@ -242,18 +242,18 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx")
+        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx")
           .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'postlistingunsecured.pdf', data);
+            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'postlistingunsecured.pdf', data);
             res.json({
               result: 'success',
-              message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.pdf",
-              filename: letter_data.acc + DATE + "postlistingunsecured.pdf"
+              message: LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.pdf",
+              filename: letter_data.cardacct + DATE + "postlistingunsecured.pdf"
             })
           }, error => {
             console.log('error ...', error)
@@ -268,8 +268,8 @@ router.post('/download', function (req, res) {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'postlistingunsecured.docx'));
       res.json({
         result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx",
-        filename: letter_data.acc + DATE + "postlistingunsecured.docx"
+        message: LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx",
+        filename: letter_data.cardacct + DATE + "postlistingunsecured.docx"
       })
     }
   }).catch((err) => {
