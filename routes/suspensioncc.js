@@ -220,7 +220,7 @@ router.post('/download', function (req, res) {
         pageMargins: [50, 60, 50, 60],
         footer: {
           columns: [
-            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, W. Welton(Mrs), M. Karangatha(Mrs), L. Karissa, G. Mburia.\n\n' }
+            { text: data.footeroneline }
           ],
           style: 'superMargin'
         },
