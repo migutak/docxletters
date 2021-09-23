@@ -274,8 +274,9 @@ router.post('/download', function (req, res) {
             width: 100,
             height: 50
           },
-          { text: '  ' },
-          { text: 'BRANCH MANAGER.' }
+          { text: '\n\nBRANCH MANAGER , ' },
+          { text: letter_data.branchname },
+          { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
         ],
         styles: {
