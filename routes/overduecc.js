@@ -190,7 +190,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt3);
 
   document.createParagraph(" ");
-  const txt4 = new TextRun("Payment can be made via Mpesa Paybill No. 400200 Account No. CR " + letter_data.cardacct + " ");
+  const txt4 = new TextRun("Payment can be made via Mpesa Paybill No. 400200 Account No. CR" + letter_data.cardacct + " ");
   const ptxt4 = new Paragraph();
   txt4.size(24);
   txt4.font("Garamond");
@@ -231,13 +231,25 @@ router.post('/download', function (req, res) {
   psign.addRun(sign);
   document.addParagraph(psign);
 
-  const signtext = new TextRun("BRANCH MANAGER.");
+  const signtext = new TextRun("BRANCH MANAGER");
+  const branchname = new TextRun(letter_data.branchname);
+  const nosigntext = new TextRun("This letter is electronically generated and is valid without a signature");
+  nosigntext.bold();
+  nosigntext.italic();
   const paragraphsigntext = new Paragraph();
-  signtext.bold();
-  signtext.underline();
-  signtext.size(28);
+  const paragraphsigntext2 = new Paragraph();
+  const paragraphsigntext3 = new Paragraph();
+  //signtext.bold();
+  //signtext.underline();
+  //signtext.size(28);
   paragraphsigntext.addRun(signtext);
+  paragraphsigntext2.addRun(branchname);
+  paragraphsigntext3.addRun(nosigntext);
   document.addParagraph(paragraphsigntext);
+  document.addParagraph(paragraphsigntext2);
+  document.addParagraph(psign);
+  document.addParagraph(psign);
+  document.addParagraph(paragraphsigntext3);
 
   const packer = new Packer();
 
@@ -327,8 +339,9 @@ router.post('/download', function (req, res) {
             width: 100,
             height: 50
           },
-          { text: ' ' },
-          { text: 'BRANCH MANAGER.' }
+          { text: '\n\nBRANCH MANAGER , ' },
+          { text: letter_data.branchname },
+          { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
         ],
         styles: {
