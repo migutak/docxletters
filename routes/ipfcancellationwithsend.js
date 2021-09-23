@@ -81,8 +81,8 @@ router.post('/download', function (req, res) {
             },
             '',
             '\n' + DATE,
-            '\n' + letter_data.insurancecompany,
-            '' + letter_data.insuranceaddress,
+            '\n' + letter_data.insuco,
+            '' + letter_data.insuaddress,
             '' + letter_data.postcode,
             ' Head Office',
             '\nNAIROBI',
@@ -91,7 +91,7 @@ router.post('/download', function (req, res) {
 
             '\nDear Sir/Madam',
             {
-                text: '\nRE: CANCELLATION \n' + letter_data.custname + '\nPOLICY NO: ' + letter_data.policynumber,
+                text: '\nRE: CANCELLATION \n' + letter_data.clientname + '\nPOLICY NO: ' + letter_data.policynumber,
                 style: 'subheader'
             },
             {
@@ -107,7 +107,7 @@ router.post('/download', function (req, res) {
                 table: {
                     body: [
                         [{ text: 'Premium Amount', style: 'tableHeader', alignment: 'left' }, { text: 'Broker', style: 'tableHeader', alignment: 'left' }, { text: 'Date paid', style: 'tableHeader', alignment: 'left' }, { text: 'Days utilized', style: 'tableHeader', alignment: 'left' }, { text: 'Days Unutilized', style: 'tableHeader', alignment: 'left' }, { text: 'Refund amount', style: 'tableHeader', alignment: 'left' }],
-                        [numeral(Math.abs(letter_data.oustbalance)).format('0,0.00'), letter_data.broker, letter_data.origdate, letter_data.daysutilized, letter_data.daysunutilized, numeral(Math.abs(letter_data.refundamount)).format('0,0.00')]
+                        [numeral(Math.abs(letter_data.policyamount)).format('0,0.00'), letter_data.broker, letter_data.loanstartdate, letter_data.daysutilized, letter_data.daysunt, numeral(Math.abs(letter_data.refundamount)).format('0,0.00')]
                     ]
                 },
                 layout: {
@@ -123,7 +123,7 @@ router.post('/download', function (req, res) {
             },
 
             { text: '\nRefund payment should be made out to the below Co-operative Bank Account. ', fontSize: 10, alignment: 'justify' },
-            { text: '\nAccount Name: ' + letter_data.custname, fontSize: 10, alignment: 'left' },
+            { text: '\nAccount Name: ' + letter_data.clientname, fontSize: 10, alignment: 'left' },
             { text: 'Branch: ' + letter_data.branchname, fontSize: 10, alignment: 'left' },
             { text: 'Account No: 01694' + letter_data.custnumber + '00 ', fontSize: 10, alignment: 'left' },
 
@@ -136,7 +136,7 @@ router.post('/download', function (req, res) {
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.custname },
+            { text: '' + letter_data.clientname },
             { text: '' + letter_data.branchname }
         ],
 
@@ -188,8 +188,8 @@ router.post('/download', function (req, res) {
         })
 
         // send email
-        emaildata.custname = letter_data.custname,
-            emaildata.email = letter_data.insuranceemail,
+        emaildata.custname = letter_data.clientname,
+            emaildata.email = letter_data.insuemail,
             emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
             emaildata.policynumber = letter_data.policynumber,
             emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
@@ -197,12 +197,12 @@ router.post('/download', function (req, res) {
 
 
         let transporter = nodemailer.createTransport({
-            host: 'smtp.office365.com',
+            host: 'smtp.gmail.com',
             port: 587,
             secure: false, // true for 465, false for other ports
             auth: {
-                user: 'ecollect@co-opbank.co.ke',
-                pass: 'abcd.123'
+                user: 'allanmaroko10',
+                pass: 'Vipermarox411'
             }
         });
 
