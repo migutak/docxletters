@@ -68,12 +68,12 @@ router.post('/download', function (req, res) {
     };
     const document = new Document();
 
-    const footer1 = new TextRun(data.footerfirst)
+    const footer1 = new TextRun(data.footerfirst) // first footer
         .size(16)
     const parafooter1 = new Paragraph()
     parafooter1.addRun(footer1).center();
     document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun(data.footersecond)
+    const footer2 = new TextRun(data.footersecond) // second footer
         .size(16)
     const parafooter2 = new Paragraph()
     parafooter1.addRun(footer2).center();

@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-const nodemailer = require("nodemailer");
 const fs = require('fs');
 var numeral = require('numeral');
 const bodyParser = require("body-parser");
@@ -10,8 +9,6 @@ const cors = require('cors');
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
-const EMAIL = data.SENDEMAILURL; // 'http://172.16.204.71:8005/demandemail/email';
-const emaildata = {};
 var fonts = {
     Roboto: {
         normal: 'fonts/Roboto-Regular.ttf',
@@ -39,7 +36,6 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-    console.log(letter_data)
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
 
@@ -84,7 +80,6 @@ router.post('/download', function (req, res) {
             '\n' + DATE,
             '\n' + letter_data.insuco,
             '' + letter_data.insuaddress,
-            // '' + letter_data.postcode,
             ' Head Office',
             '\nNAIROBI',
 
@@ -108,7 +103,7 @@ router.post('/download', function (req, res) {
                 table: {
                     body: [
                         [{ text: 'Premium Amount', style: 'tableHeader', alignment: 'left' }, { text: 'Broker', style: 'tableHeader', alignment: 'left' }, { text: 'Date paid', style: 'tableHeader', alignment: 'left' }, { text: 'Days utilized', style: 'tableHeader', alignment: 'left' }, { text: 'Days Unutilized', style: 'tableHeader', alignment: 'left' }, { text: 'Refund amount', style: 'tableHeader', alignment: 'left' }],
-                        [numeral(Math.abs(letter_data.daysutilized)).format('0,0.00'), letter_data.broker, letter_data.loanstartdate, letter_data.daysutilized, letter_data.daysunt, numeral(Math.abs(letter_data.refundamount)).format('0,0.00')]
+                        [numeral(Math.abs(letter_data.policyamount)).format('0,0.00'), letter_data.broker, letter_data.loanstartdate, letter_data.daysutilized, letter_data.daysunt, numeral(Math.abs(letter_data.refundamount)).format('0,0.00')]
                     ]
                 },
                 layout: {

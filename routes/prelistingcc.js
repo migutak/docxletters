@@ -64,12 +64,12 @@ router.post('/download', function (req, res) {
 
   const document = new Document();
   if (INCLUDELOGO == true) {
-    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+    const footer1 = new TextRun(data.footerfirst)
       .size(16)
     const parafooter1 = new Paragraph()
     parafooter1.addRun(footer1).center();
     document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+    const footer2 = new TextRun(data.footersecond)
       .size(16)
     const parafooter2 = new Paragraph()
     parafooter1.addRun(footer2).center();
@@ -246,15 +246,15 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph("Yours sincerely, ");
   // sign
-  document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 50);
+  //document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 50);
   //sign
-  const sign = new TextRun("ROSE KARAMBU ");
+  const sign = new TextRun(" ");
   const psign = new Paragraph();
   sign.size(20);
   psign.addRun(sign);
   document.addParagraph(psign);
 
-  const signtext = new TextRun("COLLECTIONS SUPPORT MANAGER.");
+  const signtext = new TextRun("BRANCH MANAGER.");
   const paragraphsigntext = new Paragraph();
   signtext.bold();
   signtext.underline();
@@ -333,12 +333,12 @@ router.post('/download', function (req, res) {
 
           { text: '\nYours sincerely, ' },
           {
-            image: 'sign_rose.png',
+            //image: 'sign_rose.png',
             width: 100,
             height: 50
           },
-          { text: 'ROSE KARAMBU  ' },
-          { text: 'COLLECTIONS SUPPORT MANAGER.' }
+          { text: '  ' },
+          { text: 'BRANCH MANAGER.' }
 
         ],
         styles: {

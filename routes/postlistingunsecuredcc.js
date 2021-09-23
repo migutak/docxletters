@@ -47,12 +47,12 @@ router.post('/download', function (req, res) {
   //
   const document = new Document();
 
-  const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+  const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman),")
     .size(16)
   const parafooter1 = new Paragraph()
   parafooter1.addRun(footer1).center();
   document.Footer.addParagraph(parafooter1);
-  const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+  const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, W. Welton(Mrs), M. Karangatha(Mrs), L. Karissa, G. Mburia.")
     .size(16)
   const parafooter2 = new Paragraph()
   parafooter1.addRun(footer2).center();
@@ -60,7 +60,7 @@ router.post('/download', function (req, res) {
 
   //logo start
   if (INCLUDELOGO == true) {
-    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync("coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
@@ -229,7 +229,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Credit Management Division.                                       Credit Management Division.");
 
 
-  if (GURARANTORS.length > 0) {
+  if (GURARANTORS?.length > 0) {
     document.createParagraph("cc: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
@@ -242,18 +242,18 @@ router.post('/download', function (req, res) {
   const packer = new Packer();
 
   packer.toBuffer(document).then((buffer) => {
-    fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx", buffer);
     //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx")
+        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx")
           .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'postlistingunsecured.pdf', data);
+            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'postlistingunsecured.pdf', data);
             res.json({
               result: 'success',
-              message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.pdf",
-              filename: letter_data.acc + DATE + "postlistingunsecured.pdf"
+              message: LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.pdf",
+              filename: letter_data.cardacct + DATE + "postlistingunsecured.pdf"
             })
           }, error => {
             console.log('error ...', error)
@@ -268,8 +268,8 @@ router.post('/download', function (req, res) {
       // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'postlistingunsecured.docx'));
       res.json({
         result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx",
-        filename: letter_data.acc + DATE + "postlistingunsecured.docx"
+        message: LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx",
+        filename: letter_data.cardacct + DATE + "postlistingunsecured.docx"
       })
     }
   }).catch((err) => {
