@@ -26,7 +26,6 @@ var PdfPrinter = require('pdfmake');
 var printer = new PdfPrinter(fonts);
 
 const LETTERS_DIR = data.filePath;
-const IMAGEPATH = data.imagePath;
 
 const { Document, Paragraph, Packer, TextRun } = docx;
 
@@ -37,29 +36,20 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json());
 router.use(cors())
 
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
-
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
   const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "isoDate");
 
   const document = new Document();
   if (INCLUDELOGO == true) {
-    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+    const footer1 = new TextRun(data.footerfirst)
       .size(16)
     const parafooter1 = new Paragraph()
     parafooter1.addRun(footer1).center();
     document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+    const footer2 = new TextRun(data.footersecond)
       .size(16)
     const parafooter2 = new Paragraph()
     parafooter1.addRun(footer2).center();
@@ -67,7 +57,7 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync("coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
@@ -186,23 +176,35 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   // sign
 
-  document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 70);
+  //document.createImage(fs.readFileSync(IMAGEPATH + "sign_rose.png"), 100, 70);
 
   //sign
   document.createParagraph(" ");
-  const sign = new TextRun("ROSE KARAMBU ");
+  const sign = new TextRun(" ");
   const psign = new Paragraph();
   sign.size(24);
   psign.addRun(sign);
   document.addParagraph(psign);
 
-  const signtext = new TextRun("COLLECTIONS SUPPORT MANAGER.");
+  const signtext = new TextRun("BRANCH MANAGER");
+  const branchname = new TextRun(letter_data.branchname);
+  const nosigntext = new TextRun("This letter is electronically generated and is valid without a signature");
+  nosigntext.bold();
+  nosigntext.italic();
   const paragraphsigntext = new Paragraph();
-  signtext.bold();
-  signtext.underline();
-  signtext.size(28);
+  const paragraphsigntext2 = new Paragraph();
+  const paragraphsigntext3 = new Paragraph();
+  //signtext.bold();
+  //signtext.underline();
+  //signtext.size(28);
   paragraphsigntext.addRun(signtext);
+  paragraphsigntext2.addRun(branchname);
+  paragraphsigntext3.addRun(nosigntext);
   document.addParagraph(paragraphsigntext);
+  document.addParagraph(paragraphsigntext2);
+  document.addParagraph(psign);
+  document.addParagraph(psign);
+  document.addParagraph(paragraphsigntext3);
 
   const packer = new Packer();
 
@@ -218,7 +220,7 @@ router.post('/download', function (req, res) {
         pageMargins: [50, 60, 50, 60],
         footer: {
           columns: [
-            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, W. Welton(Mrs), M. Karangatha(Mrs), L. Karissa, G. Mburia.\n\n' }
           ],
           style: 'superMargin'
         },
@@ -270,12 +272,13 @@ router.post('/download', function (req, res) {
 
           { text: '\nYours sincerely, ' },
           {
-            image: 'sign_rose.png',
+            //image: 'sign_rose.png',
             width: 100,
             height: 50
           },
-          { text: 'ROSE KARAMBU  ' },
-          { text: 'COLLECTIONS SUPPORT MANAGER.' }
+          { text: '\n\nBRANCH MANAGER , ' },
+          { text: letter_data.branchname },
+          { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
         ],
         styles: {
