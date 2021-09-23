@@ -26,7 +26,6 @@ var PdfPrinter = require('pdfmake');
 var printer = new PdfPrinter(fonts);
 
 const LETTERS_DIR = data.filePath;
-const IMAGEPATH = data.imagePath;
 
 const {
   Document,
@@ -42,29 +41,19 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json());
 router.use(cors())
 
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
-
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
-  const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
   const document = new Document();
   if (INCLUDELOGO == true) {
-    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),")
+    const footer1 = new TextRun("Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman),")
       .size(16)
     const parafooter1 = new Paragraph()
     parafooter1.addRun(footer1).center();
     document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.")
+    const footer2 = new TextRun("J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, W. Welton(Mrs), M. Karangatha(Mrs), L. Karissa, G. Mburia.")
       .size(16)
     const parafooter2 = new Paragraph()
     parafooter1.addRun(footer2).center();
@@ -72,7 +61,7 @@ router.post('/download', function (req, res) {
 
     //logo start
 
-    document.createImage(fs.readFileSync(IMAGEPATH + 'coop.jpg'), 350, 60, {
+    document.createImage(fs.readFileSync('coop.jpg'), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
