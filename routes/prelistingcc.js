@@ -334,8 +334,8 @@ router.post('/download', function (req, res) {
           { text: '\nYours sincerely, ' },
           {
             //image: 'sign_rose.png',
-            width: 100,
-            height: 50
+           // width: 100,
+            //height: 50
           },
           { text: '  ' },
           { text: 'BRANCH MANAGER.' }
