@@ -35,6 +35,7 @@ router.get('/', function (req, res) {
 
 
 router.post('/download', function (req, res) {
+    console.log(req.body);
     const letter_data = req.body;
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");

@@ -205,7 +205,7 @@ router.post('/download', function (req, res) {
                     user: data.user,
                     pass: data.pass
                 }
-            });
+            }); 
 
         // verify connection configuration
         transporter.verify(function (error, success) {
