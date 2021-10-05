@@ -127,13 +127,13 @@ router.post('/download', function (req, res) {
             { text: '\nYour co-operation is highly appreciated. ', fontSize: 11, alignment: 'left' },
 
             { text: '\nYours Faithfully,' },
-            { text: '\n\nDAVID MITHIA,                                                                           JAMES KARANJA', style: 'tableHeader' },
+            { text: '\n\nJUDY MACHARIA,                                                                           JAMES KARANJA', style: 'tableHeader' },
             { text: 'REMEDIAL CREDIT DEPARTMENT                                          FOR HEAD – MSME REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
             { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.clientname },
+            { text: '' + letter_data.clientname + '-' + letter_data.accnumber},
             { text: '' + letter_data.branchname }
         ],
 
