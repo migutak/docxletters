@@ -1,14 +1,21 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
-const cors = require('cors')
+const cors = require('cors');
+
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT || 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 
@@ -17,20 +24,10 @@ const IMAGEPATH = data.imagePath;
 
 const { Document, Paragraph, Packer, TextRun } = docx;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
-router.use(cors())
- 
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
@@ -41,20 +38,20 @@ router.post('/download', function (req, res) {
   //
   //
   const document = new Document();
-  
-    const footer1 = new TextRun(data.footerfirst)
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun(data.footersecond)
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
 
-    //logo start
-    if (INCLUDELOGO == true) {
+  const footer1 = new TextRun(data.footerfirst)
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun(data.footersecond)
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
+  if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
@@ -84,7 +81,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph("Our Ref: DAY30/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy' ));
+  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy'));
   const pddate = new Paragraph();
   ddate.size(20);
   pddate.addRun(ddate);
@@ -132,7 +129,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("The above matter refers.");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("We wish to notify you have breached terms of the letters of offer by defaulting in repaying your monthly repayments and as such your account is in arrears of "+letter_data.accounts[0].currency +' '+numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0')+"DR as at "+DATE+" which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum. Further, you owe the Bank the total sum of "+letter_data.accounts[0].currency +' '+numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0')+"DR as at "+DATE+" being the outstanding amount on the facility, which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum) until full payment, full particulars whereof are well within your knowledge. ");
+  const txt3 = new TextRun("We wish to notify you have breached terms of the letters of offer by defaulting in repaying your monthly repayments and as such your account is in arrears of " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0') + "DR as at " + DATE + " which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum. Further, you owe the Bank the total sum of " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0') + "DR as at " + DATE + " being the outstanding amount on the facility, which continues to accrue interest at 13% per annum (equivalent to Central Bank Rate (CBR) (currently at 9%) plus a margin of 4% per annum) until full payment, full particulars whereof are well within your knowledge. ");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -143,7 +140,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Please note that if full payment of the outstanding amount is not made within the next Thirty (30) days from the date of this letter, then we shall take the necessary action to protect the Bank's interest at your own risk as to costs");
   document.createParagraph(" ");
 
-  
+
   document.createParagraph("After revisions in 2012/2013 to the Banking Act (Cap 488), Central Bank Act, Microfinance Act, 2006 and the CRB Regulations, Banks and Microfinance Banks have been mandated to share information on all their borrowers, and their loan information with registered Credit Reference Bureaus (CRBs). This means that the CRBs will now hold information on both good and bad borrowers. A good loan repayment pattern will reflect in a borrower's credit report resulting in an attractive credit profile, which can allow a borrower to negotiate preferential loan agreements with lenders.  ");
   document.createParagraph(" ");
   document.createParagraph("Thus, in compliance to the law, and having borrowed with Co-operative Bank of Kenya Limited, we have forwarded your information to the Credit Reference Bureaus below ");
@@ -236,11 +233,11 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph(" ");
   document.createParagraph("                                                                                                    JOYCE MBINDA");
-  document.createParagraph(letter_data.arocode                                           +    "                                                                                     MANAGER REMEDIAL MANAGEMENT");
+  document.createParagraph(letter_data.arocode + "                                                                                     MANAGER REMEDIAL MANAGEMENT");
   document.createParagraph("CREDIT MANAGEMENT DIVISION.                                    CREDIT MANAGEMENT DIVISION.");
 
 
-  if (GURARANTORS.length>0) {
+  if (GURARANTORS.length > 0) {
     document.createParagraph("cc: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
@@ -261,11 +258,33 @@ router.post('/download', function (req, res) {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day30.docx")
           .then(data => {
             fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'day30.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.acc + DATE + "day30.pdf",
-              filename: letter_data.acc + DATE + "day30.pdf"
-            })
+            // save to minio
+            const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day30.pdf";
+            const bucket = 'demandletters';
+            const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day30.pdf"
+            var metaData = {
+              'Content-Type': 'text/html',
+              'Content-Language': 123,
+              'X-Amz-Meta-Testing': 1234,
+              'example': 5678
+            }
+            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+              if (error) {
+                console.log(error);
+                res.status(500).json({
+                  success: false,
+                  error: error.message
+                })
+              }
+              res.json({
+                result: 'success',
+                message: LETTERS_DIR + letter_data.acc + DATE + "day30.pdf",
+                filename: letter_data.acc + DATE + "day30.pdf",
+                savedfilename: savedfilename,
+                objInfo: objInfo
+              })
+            });
+            //save to mino end
           }, error => {
             console.log('error ...', error)
             res.json({
@@ -276,12 +295,33 @@ router.post('/download', function (req, res) {
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'day40.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "day30.docx",
-        filename: letter_data.acc + DATE + "day30.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day30.docx";
+      const bucket = 'demandletters';
+      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day30.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.acc + DATE + "day30.docx",
+          filename: letter_data.acc + DATE + "day30.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);

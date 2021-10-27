@@ -3,10 +3,19 @@ var router = express.Router();
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
 const cors = require('cors')
+
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT || 9005,
+    useSSL: false, 
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 
@@ -24,20 +33,10 @@ const {
   TextRun
 } = docx;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
-router.use(cors())
-
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
@@ -286,12 +285,33 @@ const nametext = new TextRun(letter_data.custname);
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'postlistingunsecured.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx",
-        filename: letter_data.acc + DATE + "postlistingunsecured.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx";
+      const bucket = 'demandletters';
+      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "postlistingunsecured.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx",
+          filename: letter_data.acc + DATE + "postlistingunsecured.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);

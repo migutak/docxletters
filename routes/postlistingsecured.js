@@ -1,13 +1,22 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
 const cors = require('cors')
+
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT || 9005,
+    useSSL: false, 
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
+
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
@@ -267,12 +276,33 @@ const nametext = new TextRun(letter_data.custname);
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'postlistingsecured.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "postlistingsecured.docx",
-        filename: letter_data.acc + DATE + "postlistingsecured.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "postlistingsecured.docx";
+      const bucket = 'demandletters';
+      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "postlistingsecured.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.acc + DATE + "postlistingsecured.docx",
+          filename: letter_data.acc + DATE + "postlistingsecured.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);
