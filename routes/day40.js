@@ -1,14 +1,21 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
-const cors = require('cors')
+const cors = require('cors');
+
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT || 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 
@@ -17,20 +24,10 @@ const IMAGEPATH = data.imagePath;
 
 const { Document, Paragraph, Packer, TextRun } = docx;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
-router.use(cors())
- 
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
@@ -41,20 +38,20 @@ router.post('/download', function (req, res) {
   //
   //
   const document = new Document();
-  
-    const footer1 = new TextRun(data.footerfirst)
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun(data.footersecond)
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
 
-    //logo start
-    if (INCLUDELOGO == true) {
+  const footer1 = new TextRun(data.footerfirst)
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun(data.footersecond)
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
+  if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
@@ -84,7 +81,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph("Our Ref: DAY40/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy' ));
+  const ddate = new TextRun(dateFormat(new Date(), 'dd-mmm-yyyy'));
   const pddate = new Paragraph();
   ddate.size(20);
   pddate.addRun(ddate);
@@ -132,7 +129,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("We refer to our notices dated xxxxxxxxxxxxx, xxxxxxxxxxxxxxx and xxxxxxxxxxxxxxxxxx");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("As you are fully aware and despite the notices mentioned above, you have not rectified the default and you owe the Bank the sum of "+letter_data.accounts[0].currency +' '+numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0')+"DR as at "+DATE+" in respect of a facility granted to "+letter_data.custname+", full particulars whereof are well within your knowledge. ");
+  const txt3 = new TextRun("As you are fully aware and despite the notices mentioned above, you have not rectified the default and you owe the Bank the sum of " + letter_data.accounts[0].currency + ' ' + numeral(Math.abs(letter_data.accounts[0].oustbalance)).format('0,0.0') + "DR as at " + DATE + " in respect of a facility granted to " + letter_data.custname + ", full particulars whereof are well within your knowledge. ");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -148,7 +145,7 @@ router.post('/download', function (req, res) {
   note1.size(24);
   const note = new TextRun("TAKE NOTICE that pursuant to the provisions of Section 96(2) of the Land Act, 2012 the Bank intends to exercise its statutory power of sale over L.R NO. xxxxxx aforesaid after expiry of FORTY (40) DAYS from the date of service of this Notice upon yourself unless you rectify the default and all the outstanding balances owned to the Bank are fully settled within the aforesaid period. ");
   const pnote = new Paragraph();
-  
+
   pnote.addRun(note);
   pnote.justified();
   document.addParagraph(pnote);
@@ -157,7 +154,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Please note that any repayment arrangements entered into between yourselves and the Bank and/or any payments made by you after the date of this notice shall be accepted by the Bank strictly on account and without prejudice to the Bank's right to proceed and realize its securities as aforesaid.");
   document.createParagraph(" ");
   document.createParagraph("FURTHER NOTE that pursuant to the provisions of Section 103 of the Land Act, 2012, you are at liberty to apply to the Court for any relief that the Court may deem fit against the Bank's remedy.");
-  
+
 
   document.createParagraph(" ");
   document.createParagraph("Yours Faithfully, ");
@@ -165,11 +162,11 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph(" ");
   document.createParagraph("                                                                                                    JOYCE MBINDA");
-  document.createParagraph(letter_data.arocode                                           +    "                                                                                     MANAGER REMEDIAL MANAGEMENT");
+  document.createParagraph(letter_data.arocode + "                                                                                     MANAGER REMEDIAL MANAGEMENT");
   document.createParagraph("CREDIT MANAGEMENT DIVISION.                                    CREDIT MANAGEMENT DIVISION.");
 
 
-  if (GURARANTORS.length>0) {
+  if (GURARANTORS.length > 0) {
     document.createParagraph("cc: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
@@ -190,11 +187,33 @@ router.post('/download', function (req, res) {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day40.docx")
           .then(data => {
             fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'day40.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.acc + DATE + "day40.pdf",
-              filename: letter_data.acc + DATE + "day40.pdf"
-            })
+            // save to minio
+            const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day40.pdf";
+            const bucket = 'demandletters';
+            const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day40.pdf"
+            var metaData = {
+              'Content-Type': 'text/html',
+              'Content-Language': 123,
+              'X-Amz-Meta-Testing': 1234,
+              'example': 5678
+            }
+            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+              if (error) {
+                console.log(error);
+                res.status(500).json({
+                  success: false,
+                  error: error.message
+                })
+              }
+              res.json({
+                result: 'success',
+                message: LETTERS_DIR + letter_data.acc + DATE + "day40.pdf",
+                filename: letter_data.acc + DATE + "day40.pdf",
+                savedfilename: savedfilename,
+                objInfo: objInfo
+              })
+            });
+            //save to mino end
           }, error => {
             console.log('error ...', error)
             res.json({
@@ -205,12 +224,33 @@ router.post('/download', function (req, res) {
       }
       convert();
     } else {
-      //
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "day40.docx",
-        filename: letter_data.acc + DATE + "day40.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day40.docx";
+      const bucket = 'demandletters';
+      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day40.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.acc + DATE + "day40.docx",
+          filename: letter_data.acc + DATE + "day40.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);

@@ -1,14 +1,21 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
-const cors = require('cors')
+const cors = require('cors');
+
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT || 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 const { Document, Paragraph, Packer, TextRun } = docx;
 
@@ -17,20 +24,10 @@ var data = require('./data.js');
 const LETTERS_DIR = data.filePath;
 const IMAGEPATH = data.imagePath;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
-router.use(cors())
- 
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
@@ -41,19 +38,19 @@ router.post('/download', function (req, res) {
   //
   //
   const document = new Document();
-  
-    const footer1 = new TextRun(data.footerfirst)
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun(data.footersecond)
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
 
-    //logo start
+  const footer1 = new TextRun(data.footerfirst)
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun(data.footersecond)
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
   if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
@@ -84,7 +81,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph("Our Ref: DAY90/" + letter_data.branchcode + '/' + letter_data.arocode + '/' + DATE);
   document.createParagraph(" ");
-  const ddate = new TextRun(dateFormat(new Date(), 'fullDate' ));
+  const ddate = new TextRun(dateFormat(new Date(), 'fullDate'));
   const pddate = new Paragraph();
   ddate.size(20);
   pddate.addRun(ddate);
@@ -121,7 +118,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: OUTSTANDING LIABILITIES DUE TO THE BANK ON ACCOUNT OF "+letter_data.acc+": BASE NO. " + letter_data.custnumber);
+  const headertext = new TextRun("RE: OUTSTANDING LIABILITIES DUE TO THE BANK ON ACCOUNT OF " + letter_data.acc + ": BASE NO. " + letter_data.custnumber);
   const paragraphheadertext = new Paragraph();
   headertext.bold();
   headertext.underline();
@@ -132,7 +129,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("We refer to our notice dated xxxxxxxxxxx. ");
 
   document.createParagraph(" ");
-  const txt3 = new TextRun("As you are fully aware and despite the referenced notice, the above account is in arrears of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+" dr as at (Date) which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)) and late penalties of 0.5% per month and further the total outstanding sum due to the Bank as at "+DATE+" is "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+". dr which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)).");
+  const txt3 = new TextRun("As you are fully aware and despite the referenced notice, the above account is in arrears of " + letter_data.accounts[0].currency + ' ' + numeral(letter_data.accounts[0].oustbalance).format('0,0.0') + " dr as at (Date) which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)) and late penalties of 0.5% per month and further the total outstanding sum due to the Bank as at " + DATE + " is " + letter_data.accounts[0].currency + ' ' + numeral(letter_data.accounts[0].oustbalance).format('0,0.0') + ". dr which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)).");
   const ptxt3 = new Paragraph();
   txt3.size(20);
   ptxt3.addRun(txt3);
@@ -144,8 +141,8 @@ router.post('/download', function (req, res) {
   document.createParagraph("L.R.NO. xxxxxxxxxxxxxxxx registered in the name of xxxxxxxxxxxx")
   document.createParagraph(" ");
 
-  
-  document.createParagraph("TAKE NOTICE that pursuant to the provisions of Section 90 of the Land Act, 2012, the Bank intends to take action and exercise remedies provided in this Section after the expiry of THREE (3) MONTHS from the date of service of this Notice upon yourself if you do not rectify the default by repaying the outstanding sum of "+letter_data.accounts[0].currency +' '+numeral(letter_data.accounts[0].oustbalance).format('0,0.0')+"dr which includes the ");
+
+  document.createParagraph("TAKE NOTICE that pursuant to the provisions of Section 90 of the Land Act, 2012, the Bank intends to take action and exercise remedies provided in this Section after the expiry of THREE (3) MONTHS from the date of service of this Notice upon yourself if you do not rectify the default by repaying the outstanding sum of " + letter_data.accounts[0].currency + ' ' + numeral(letter_data.accounts[0].oustbalance).format('0,0.0') + "dr which includes the ");
   document.createParagraph(" ");
   document.createParagraph("Please be advised that if you fail to remedy the default and repay the outstanding amount as stated above the Bank shall exercise any of the remedies as stipulated in Section 90 (3) of the Land Act, 2012 against you which includes:");
   document.createParagraph("•	Files suit against you for money due and owing ");
@@ -165,11 +162,11 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph(" ");
   document.createParagraph("                                                                                                    JOYCE MBINDA");
-  document.createParagraph(letter_data.arocode                                           +    "                                                                                     MANAGER REMEDIAL MANAGEMENT");
+  document.createParagraph(letter_data.arocode + "                                                                                     MANAGER REMEDIAL MANAGEMENT");
   document.createParagraph("CREDIT MANAGEMENT DIVISION.                                    CREDIT MANAGEMENT DIVISION.");
 
 
-  if (GURARANTORS.length>0) {
+  if (GURARANTORS.length > 0) {
     document.createParagraph("CC: ");
 
     for (g = 0; g < GURARANTORS.length; g++) {
@@ -190,11 +187,33 @@ router.post('/download', function (req, res) {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day90.docx")
           .then(data => {
             fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'day90.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.acc + DATE + "day90.pdf",
-              filename: letter_data.acc + DATE + "day90.pdf"
-            })
+            // save to minio
+            const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day90.pdf";
+            const bucket = 'demandletters';
+            const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day90.pdf"
+            var metaData = {
+              'Content-Type': 'text/html',
+              'Content-Language': 123,
+              'X-Amz-Meta-Testing': 1234,
+              'example': 5678
+            }
+            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+              if (error) {
+                console.log(error);
+                res.status(500).json({
+                  success: false,
+                  error: error.message
+                })
+              }
+              res.json({
+                result: 'success',
+                message: LETTERS_DIR + letter_data.acc + DATE + "day90.pdf",
+                filename: letter_data.acc + DATE + "day90.pdf",
+                savedfilename: savedfilename,
+                objInfo: objInfo
+              })
+            });
+            //save to mino end
           }, error => {
             console.log('error ...', error)
             res.json({
@@ -205,12 +224,33 @@ router.post('/download', function (req, res) {
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'day90.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.acc + DATE + "day90.docx",
-        filename: letter_data.acc + DATE + "day90.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day90.docx";
+      const bucket = 'demandletters';
+      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day90.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + letter_data.acc + DATE + "day90.docx",
+          filename: letter_data.acc + DATE + "day90.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);
