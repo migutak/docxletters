@@ -6,6 +6,15 @@ const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const cors = require('cors');
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT || 9005,
+    useSSL: false, 
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 
@@ -220,10 +229,10 @@ router.post('/download', function (req, res) {
     packer.toBuffer(document).then((buffer) => {
         fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", buffer);
 
-        //conver to pdf
+        //convert to pdf
         // if pdf format
         if (letter_data.format == 'pdf') {
-           
+
             var body = [];
             body.push(['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'])
             for (i = 0; i < DATA.length; i++) {
@@ -366,37 +375,70 @@ router.post('/download', function (req, res) {
             }
 
             var pdfDoc = printer.createPdfKitDocument(dd, options);
-            //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf"));
-            //pdfDoc.end();
-
-            // send response
-            //res.json({
-            //  result: 'success',
-            // message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
-            //filename: accnumber_masked + DATE + "demand1.pdf",
-            //piped: true
-            //})
             // ensures response is sent only after pdf is created
             writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf");
             pdfDoc.pipe(writeStream);
             pdfDoc.end();
             writeStream.on('finish', function () {
                 // do stuff with the PDF file
-                // send response
-                res.json({
-                    result: 'success',
-                    message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
-                    filename: accnumber_masked + DATE + "demand1.pdf"
-                })
+                // save to minio
+                const filelocation = LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf";
+                const bucket = 'demandletters';
+                const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "demand1.pdf"
+                var metaData = {
+                    'Content-Type': 'text/html',
+                    'Content-Language': 123,
+                    'X-Amz-Meta-Testing': 1234,
+                    'example': 5678
+                }
+                minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+                    if (error) {
+                        console.log(error);
+                        res.status(500).json({
+                            success: false,
+                            error: error.message
+                        })
+                    }
+                    res.json({
+                        result: 'success',
+                        message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
+                        filename: accnumber_masked + DATE + "demand1.pdf",
+                        savedfilename: savedfilename,
+                        objInfo: objInfo
+                    })
+                });
+                //save to mino end
+
             });
         } else {
 
-            res.json({
-                result: 'success',
-                message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
-                filename: accnumber_masked + DATE + "demand1.docx",
-                piped: true
+            // save to minio
+            const filelocation = LETTERS_DIR + accnumber_masked + DATE + "demand1.docx";
+            const bucket = 'demandletters';
+            const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "demand1.docx"
+            var metaData = {
+                'Content-Type': 'text/html',
+                'Content-Language': 123,
+                'X-Amz-Meta-Testing': 1234,
+                'example': 5678
+            }
+            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+                if (error) {
+                    console.log(error);
+                    res.status(500).json({
+                        success: false,
+                        error: error.message
+                    })
+                }
+                res.json({
+                    result: 'success',
+                    message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
+                    filename: accnumber_masked + DATE + "demand1.docx",
+                    savedfilename: savedfilename,
+                    objInfo: objInfo
+                })
             });
+            //save to mino end
         }
     }).catch((err) => {
         console.log(err);
