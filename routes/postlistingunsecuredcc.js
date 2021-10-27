@@ -1,19 +1,23 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
-var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
 const cors = require('cors')
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT || 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
-const IMAGEPATH = data.imagePath;
 
 const {
   Document,
@@ -22,26 +26,15 @@ const {
   TextRun
 } = docx;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
-router.use(cors())
-
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
-  const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
   //
   //
@@ -126,11 +119,11 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your card number; " + letter_data.cardnumber + " that is in arrears of Kshs."+ letter_data.oustbalance +" and your card account has been referred to our Credit Management Division recovery section for debt collection.");
+  document.createParagraph("We note with regret that you have failed to act on our various requests to you to either repay or regularise your card number; " + letter_data.cardnumber + " that is in arrears of Kshs." + letter_data.oustbalance + " and your card account has been referred to our Credit Management Division recovery section for debt collection.");
   document.createParagraph(" ");
   document.createParagraph("Please note that interest and other bank carges continues to accrue at various Bank rates until the outstanding balance is paid in full. ");
   document.createParagraph(" ");
-  document.createParagraph("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before "+ dateFormat(new Date() + 14, 'dd-mmm-yyyy'), +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;");
+  document.createParagraph("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before " + dateFormat(new Date() + 14, 'dd-mmm-yyyy'), +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;");
   document.createParagraph("1.	Appoint an External Debt Collector. ");
   document.createParagraph("2.	File suit against you. ");
   document.createParagraph(" ");
@@ -225,7 +218,7 @@ router.post('/download', function (req, res) {
   document.createParagraph(" ");
   document.createParagraph(" ");
   document.createParagraph("                                                                                       Charles Otieno");
-  document.createParagraph(letter_data.arocode                                           +    "                                                                        For Manager Remedial Management,");
+  document.createParagraph(letter_data.arocode + "                                                                        For Manager Remedial Management,");
   document.createParagraph("Credit Management Division.                                       Credit Management Division.");
 
 
@@ -250,11 +243,33 @@ router.post('/download', function (req, res) {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx")
           .then(data => {
             fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'postlistingunsecured.pdf', data);
-            res.json({
-              result: 'success',
-              message: LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.pdf",
-              filename: letter_data.cardacct + DATE + "postlistingunsecured.pdf"
-            })
+            // save to minio
+            const filelocation = LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.pdf";
+            const bucket = 'demandletters';
+            const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "postlistingunsecured.pdf"
+            var metaData = {
+              'Content-Type': 'text/html',
+              'Content-Language': 123,
+              'X-Amz-Meta-Testing': 1234,
+              'example': 5678
+            }
+            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+              if (error) {
+                console.log(error);
+                res.status(500).json({
+                  success: false,
+                  error: error.message
+                })
+              }
+              res.json({
+                result: 'success',
+                message: LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.pdf",
+                filename: accnumber_masked + DATE + "postlistingunsecured.pdf",
+                savedfilename: savedfilename,
+                objInfo: objInfo
+              })
+            });
+            //save to mino end
           }, error => {
             console.log('error ...', error)
             res.json({
@@ -265,12 +280,33 @@ router.post('/download', function (req, res) {
       }
       convert();
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.acc + DATE + 'postlistingunsecured.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx",
-        filename: letter_data.cardacct + DATE + "postlistingunsecured.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.docx";
+      const bucket = 'demandletters';
+      const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "postlistingunsecured.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.docx",
+          filename: accnumber_masked + DATE + "postlistingunsecured.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);
