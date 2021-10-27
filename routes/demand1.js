@@ -411,7 +411,6 @@ router.post('/download', function (req, res) {
 
             });
         } else {
-
             // save to minio
             const filelocation = LETTERS_DIR + accnumber_masked + DATE + "demand1.docx";
             const bucket = 'demandletters';

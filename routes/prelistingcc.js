@@ -1,16 +1,21 @@
 var express = require('express');
 var router = express.Router();
-const app = express();
-const path = require('path');
 const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
-const bodyParser = require("body-parser");
-const word2pdf = require('word2pdf-promises');
 // const word2pdf = require('word2pdf');
 var data = require('./data.js');
 const cors = require('cors')
+var Minio = require("minio");
+
+var minioClient = new Minio.Client({
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT || 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 // Define font files
 var fonts = {
@@ -40,26 +45,14 @@ const {
   VerticalPositionAlign, floating
 } = docx;
 
-router.use(bodyParser.urlencoded({
-  extended: true
-}));
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 
-router.use(bodyParser.json());
-router.use(cors())
-
-/*router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});*/
+router.use(cors());
 
 router.post('/download', function (req, res) {
   const letter_data = req.body;
-  const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
-  const DATA = req.body.accounts;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
   const document = new Document();
@@ -334,7 +327,7 @@ router.post('/download', function (req, res) {
           { text: '\nYours sincerely, ' },
           {
             //image: 'sign_rose.png',
-           // width: 100,
+            // width: 100,
             //height: 50
           },
           { text: '  ' },
@@ -374,29 +367,67 @@ router.post('/download', function (req, res) {
       }
 
       var pdfDoc = printer.createPdfKitDocument(dd, options);
-      //pdfDoc.pipe(fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf"));
-      //pdfDoc.end();
-
       // ensures response is sent only after pdf is created
       writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "prelistingcc.pdf");
       pdfDoc.pipe(writeStream);
       pdfDoc.end();
       writeStream.on('finish', function () {
-        // do stuff with the PDF file
-        // send response
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.pdf",
-          filename: letter_data.cardacct + DATE + "prelistingcc.pdf"
-        })
+        // save to minio
+        const filelocation = LETTERS_DIR + accnumber_masked + DATE + "prelistingcc.pdf";
+        const bucket = 'demandletters';
+        const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "prelistingcc.pdf"
+        var metaData = {
+          'Content-Type': 'text/html',
+          'Content-Language': 123,
+          'X-Amz-Meta-Testing': 1234,
+          'example': 5678
+        }
+        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+          if (error) {
+            console.log(error);
+            res.status(500).json({
+              success: false,
+              error: error.message
+            })
+          }
+          res.json({
+            result: 'success',
+            message: LETTERS_DIR + accnumber_masked + DATE + "prelistingcc.pdf",
+            filename: accnumber_masked + DATE + "prelistingcc.pdf",
+            savedfilename: savedfilename,
+            objInfo: objInfo
+          })
+        });
+        //save to mino end
       });
     } else {
-      // res.sendFile(path.join(LETTERS_DIR + letter_data.cardacct + DATE + 'prelistingcc.docx'));
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + letter_data.cardacct + DATE + "prelistingcc.docx",
-        filename: letter_data.cardacct + DATE + "prelistingcc.docx"
-      })
+      // save to minio
+      const filelocation = LETTERS_DIR + accnumber_masked + DATE + "prelistingcc.docx";
+      const bucket = 'demandletters';
+      const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "prelistingcc.docx"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
+      }
+      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            success: false,
+            error: error.message
+          })
+        }
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + accnumber_masked + DATE + "prelistingcc.docx",
+          filename: accnumber_masked + DATE + "prelistingcc.docx",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+      });
+      //save to mino end
     }
   }).catch((err) => {
     console.log(err);
