@@ -6,7 +6,15 @@ var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const cors = require('cors');
+var Minio = require("minio");
 
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT || 9005,
+    useSSL: false, 
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
@@ -23,11 +31,8 @@ var fonts = {
 var PdfPrinter = require('pdfmake');
 var printer = new PdfPrinter(fonts);
 
-router.use(bodyParser.urlencoded({
-    extended: true
-}));
-
-router.use(bodyParser.json());
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 router.use(cors());
 
 
@@ -177,13 +182,14 @@ router.post('/download', function (req, res) {
     }
 
     var pdfDoc = printer.createPdfKitDocument(docDefinition, options);
-    writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf");
+    const filelocation = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf";
+    writeStream = fs.createWriteStream(filelocation);
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
     writeStream.on('finish', function () {
         res.json({
             result: 'success',
-            message: LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
+            message: filelocation,
             filename: letter_data.accnumber + DATE + "ipfcancellation.pdf"
         })
 
@@ -192,7 +198,7 @@ router.post('/download', function (req, res) {
             emaildata.email = letter_data.insuemail,
             emaildata.branchemail = 'E-Collect <ecollect@co-opbank.co.ke>',
             emaildata.policynumber = letter_data.policynumber,
-            emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
+            emaildata.path = filelocation,
             emaildata.cc = [letter_data.emailaddress, letter_data.username];
 
 
