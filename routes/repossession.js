@@ -46,7 +46,7 @@ router.post('/download', function (req, res) {
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
 
-    var DATEEXPIRY = dateFormat(date1.setDate(date1.getDate() + 30), "dd-mmm-yyyy");
+    
     var docDefinition = {
         pageSize: 'A4',
         pageOrientation: 'portrait',
@@ -90,12 +90,12 @@ router.post('/download', function (req, res) {
                     widths: [250, '*'],
                     body: [
                       [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
-                      ['To: Auctioneers name', 'Valid up to: ' + DATEEXPIRY],
+                      ['To: Auctioneers name', 'Valid up to: ' + letter_data.expirydate],
                       ['Nairobi', ''],
                       ['', ''],
                       ['Asset Finance Agreement No.', letter_data.customerNumber],
                       ['', ''],
-                      ['Hirer’s Name ', ':     ' + letter_data.ipfBalance],
+                      ['Hirer’s Name ', ':     ' + letter_data.customerName],
                       ['Unit Financed ', ':     ' + letter_data.vehicleMake + ' & ' + letter_data.vehicleModel],
                       ['Registration No ', ':     ' + letter_data.vehicleRegnumber],
                     ]
