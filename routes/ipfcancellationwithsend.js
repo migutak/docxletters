@@ -3,7 +3,7 @@ var router = express.Router();
 const nodemailer = require("nodemailer");
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
+require('log-timestamp');
 var dateFormat = require('dateformat');
 const cors = require('cors');
 var Minio = require("minio");

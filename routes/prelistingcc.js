@@ -4,7 +4,7 @@ const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
-// const word2pdf = require('word2pdf');
+require('log-timestamp');
 var data = require('./data.js');
 const cors = require('cors')
 var Minio = require("minio");

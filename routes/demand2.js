@@ -6,6 +6,7 @@ var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const cors = require('cors');
 var Minio = require("minio");
+require('log-timestamp');
 
 var minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',

@@ -5,6 +5,7 @@ const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const cors = require('cors');
+require('log-timestamp');
 
 var Minio = require("minio");
 
