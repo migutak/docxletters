@@ -12,8 +12,8 @@ var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
     port: process.env.MINIO_PORT || 9005,
     useSSL: false, 
-    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
-    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+    accessKey: process.env.ACCESSKEY || 'minioadmin',
+    secretKey: process.env.SECRETKEY || 'minioadmin'
 });
 
 var data = require('./data.js');
@@ -398,6 +398,7 @@ router.post('/download', function (req, res) {
                             success: false,
                             error: error.message
                         })
+                        deleteFile(request);
                     }
                     res.json({
                         result: 'success',
@@ -406,6 +407,7 @@ router.post('/download', function (req, res) {
                         savedfilename: savedfilename,
                         objInfo: objInfo
                     })
+                    deleteFile(request);
                 });
                 //save to mino end
 
@@ -421,6 +423,7 @@ router.post('/download', function (req, res) {
                 'X-Amz-Meta-Testing': 1234,
                 'example': 5678
             }
+            console.log(filelocation);
             minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
                 if (error) {
                     console.log(error);
@@ -428,6 +431,7 @@ router.post('/download', function (req, res) {
                         success: false,
                         error: error.message
                     })
+                    deleteFile(filelocation);
                 }
                 res.json({
                     result: 'success',
@@ -436,6 +440,7 @@ router.post('/download', function (req, res) {
                     savedfilename: savedfilename,
                     objInfo: objInfo
                 })
+                deleteFile(filelocation);
             });
             //save to mino end
         }
@@ -447,5 +452,14 @@ router.post('/download', function (req, res) {
         });
     });
 });
+function deleteFile(req) {
+    fs.unlink(req, (err) => {
+        if (err) {
+            console.error(err)
+            return
+        }
+        //file removed
+    })
+}
 
 module.exports = router;

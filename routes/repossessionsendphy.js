@@ -16,10 +16,8 @@ var minioClient = new Minio.Client({
 });
 
 var data = require('./data.js');
-const emaildata = {};
 
 const LETTERS_DIR = data.filePath;
-
 var fonts = {
     Roboto: {
         normal: 'fonts/Roboto-Regular.ttf',
@@ -30,7 +28,6 @@ var fonts = {
 };
 
 var PdfPrinter = require('pdfmake');
-const {request} = require("express");
 var printer = new PdfPrinter(fonts);
 
 router.use(bodyParser.urlencoded({
@@ -42,14 +39,13 @@ router.use(cors());
 
 
 router.get('/', function (req, res) {
-    res.json({ message: 'Repossession letter is ready!' });
+    res.json({ message: 'Reposession send physically letter is ready!' });
 });
 
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-    console.log(letter_data);
-
+    console.log('this is request body' + req.body);
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
     const rawaccnumber = letter_data.accnumber;
@@ -101,32 +97,32 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [250, '*'],
                     body: [
-                      [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
+                        [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
                         ['Date: ' + repodate2, 'Valid up to: ' + DATEEXPIRY],
-                      ['To ', ': ' + letter_data.auctioneerName],
-                      ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
-                      ['Hirer’s Name ', ':     ' + letter_data.ipfBalance],
-                      ['Unit Financed ', ':     ' + letter_data.vehicleMake + ' & ' + letter_data.vehicleModel],
-                      ['Registration No ', ':     ' + letter_data.vehicleRegnumber],
+                        ['To ', ': ' + letter_data.auctioneername],
+                        ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
+                        ['Hirer’s Name ', ':     ' + letter_data.custname],
+                        ['Unit Financed ', ':     ' + letter_data.vehiclemake + ' & ' + letter_data.vehiclemodel],
+                        ['Registration No ', ':     ' + letter_data.vehicleregno],
                     ]
                 },
                 layout: 'noBorders',
-                
+
             },
             '\n',
-            
+
             {
                 text: [
                     '\nAccording to our records, the monthly rental of the above Asset finance Agreement is now in arrears. The total amount due is ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalamount)).format('0,0.00'), fontSize: 10, bold: true },
                     '. ',
                 ]
-                
+
             },
             {
                 text: [
                     '\nPlease approach the above named Hirer on our behalf and collect the total sum of ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalamount)).format('0,0.00'), fontSize: 10, bold: true },
                     ' plus your own charges, failing which you may take this letter as your authority to effect immediate re-possession',
                     ' of the above/equipment without further reference to us.',
                     { text: 'HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED.', fontSize: 10, bold: true},
@@ -134,39 +130,42 @@ router.post('/download', function (req, res) {
                 ]
             },
             '\n',
-            
+
             {
                 table: {
                     headerRows: 1,
                     widths: [200, '*'],
                     body: [
-                      [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
-                      ['Postal Address', ':      ' + letter_data.postaladdress || 'N/A'],
-                      ['Telephone', ':     ' + letter_data.phoneNumber || 'N/A'],
-                      ['Physical Address/Location', ':     ' + letter_data.place || 'N/A'],
-                      ['Type of Business', ':      ' + letter_data.typeofbusiness || 'N/A'],
-                      ['Bankers and Branch', ':     ' + letter_data.branchName || 'N/A'],
-                      ['Purpose of Vehicle', ':     ' + letter_data.purposeofVehicle || 'N/A'],
-                      ['Guarantors', ':     ' + letter_data.Guarantors || 'N/A'],
-                      ['Guarantors Address', ':     ' + letter_data.GuarantorsAddress || 'N/A'],
-                      ['Chassis No.', ':     ' + letter_data.chasisNumber || 'N/A'],
-                      ['Engine No.', ':     ' + letter_data.EngineNo || 'N/A'],
-                      ['Any other information', '     ' + letter_data.otherInformation || 'N/A']
+                        [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
+                        ['Postal Address', ':' + letter_data.postaladdress || 'N/A'],
+                        ['Telephone', ':' + letter_data.celnumber || 'N/A'],
+                        ['Physical Address/Location', ':' + letter_data.place || 'N/A'],
+                        ['Type of Business', ':' + letter_data.typeofbusiness || 'N/A'],
+                        ['Bankers and Branch', ':' + letter_data.branchname || 'N/A'],
+                        ['Purpose of Vehicle', ':' + letter_data.purposeofvehicle || 'N/A'],
+                        ['Guarantors', ':' + letter_data.guarantors || 'N/A'],
+                        ['Guarantors Address', ':' + letter_data.guarantorsaddress || 'N/A'],
+                        ['Chassis No.', ':' + letter_data.chassisnumber || 'N/A'],
+                        ['Engine No.', ':' + letter_data.engineno || 'N/A'],
+                        ['Any other information', '     ' + letter_data.anyotherinfo || 'N/A']
                     ]
                 },
                 layout: 'noBorders',
-                
+
             },
 
-            { text: '\n\nVehicle tracked by: ' + letter_data.trackingCompany, fontSize: 10, alignment: 'left' },
+            { text: '\n\nVehicle tracked by: ' + letter_data.trackingcompany, fontSize: 10, alignment: 'left' },
 
             { text: '\nYours Faithfully,' },
-            { text: '\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
-            { text: 'This letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
+
+
+            { text: '\n\n\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
+
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.customerName },
+            { text: '' + letter_data.custname },
             { text: '' + letter_data.postaladdress }
         ],
 
@@ -215,7 +214,7 @@ router.post('/download', function (req, res) {
         //     result: 'success',
         //     message: LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
         //     filename: letter_data.accnumber + DATE + "repossession.pdf"
-        // }
+        // })
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
         const bucket = 'demandletters';
@@ -246,76 +245,7 @@ router.post('/download', function (req, res) {
         });
         //save to mino end
 
-    })
-    // start of send email
-    emaildata.customerName = letter_data.customerName,
-        emaildata.email = letter_data.AUCTIONEEREMAIL,
-        emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
-        emaildata.vehicleRegnumber = letter_data.vehicleRegnumber,
-        emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
-        emaildata.cc = [letter_data.email];
-    console.log(emaildata);
-
-
-    let transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-            user: 'allanmaroko10',
-            pass: 'Vipermarox411'
-        }
     });
-
-    // verify connection configuration
-    transporter.verify(function (error, success) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log("Server is ready to take our messages");
-        }
-    });
-
-    var mailOptions = {
-        from: 'ecollect@co-opbank.co.ke',
-        to: emaildata.email,
-        cc: emaildata.cc,
-        subject: "Repossession Order - " + emaildata.customerName + " VEHICLE REG NO.: " + emaildata.vehicleRegnumber,
-        // text: "Text. ......",
-        html: '<h5>Dear Sir/Madam:</h5>' +
-            'Please find attached repossession order for the above customer.<br>' +
-            '<p>Kindly note this is an automated delivery system; do not reply to this email address</p>' +
-            '<br>' +
-            'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
-            'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
-            '<br>' +
-            'Best Regards,<br>' +
-            'Co-operative Bank of Kenya' +
-            '<br> <br>',
-        attachments: [
-            {
-                path: emaildata.path
-            }
-        ]
-    };
-
-    // send email
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log(error);
-            res.json({
-                result: 'fail',
-                message: "message not sent"
-            })
-        }
-        console.log("info > ", info)
-        res.json({
-            result: 'success',
-            message: "message sent",
-            info: info
-        })
-    })
-    // end of send email
 });
 function deleteFile(req) {
     fs.unlink(req, (err) => {
@@ -326,4 +256,5 @@ function deleteFile(req) {
         //file removed
     })
 }
+
 module.exports = router;
