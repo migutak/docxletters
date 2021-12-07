@@ -6,6 +6,14 @@ var numeral = require('numeral');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const cors = require('cors');
+var Minio = require("minio");
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
+    useSSL: false,
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 
@@ -38,9 +46,13 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
+    const rawaccnumber = letter_data.ACCNUMBER;
+    const repodate = letter_data.daterepoissued;
+    const repodate2 = dateFormat(repodate, "dd-mmm-yyyy");
+    const first4 = rawaccnumber.substring(0, 9);
+    const accnumber_masked = first4 + 'xxxxx';
 
     var DATEEXPIRY = dateFormat(date1.setDate(date1.getDate() + 30), "dd-mmm-yyyy");
     var docDefinition = {
@@ -85,15 +97,13 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [250, '*'],
                     body: [
-                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
-                        ['To: Auctioneers name', 'Valid up to: ' + DATEEXPIRY],
-                        ['Nairobi', ''],
-                        ['', ''],
-                        ['Asset Finance Agreement No.', letter_data.customerNumber],
-                        ['', ''],
-                        ['Hirer’s Name ', ':     ' + letter_data.ipfBalance],
-                        ['Unit Financed ', ':     ' + letter_data.vehicleMake + ' & ' + letter_data.vehicleModel],
-                        ['Registration No ', ':     ' + letter_data.vehicleRegnumber],
+                        [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
+                        ['Date: ' + repodate2, 'Valid up to: ' + DATEEXPIRY],
+                        ['To ', ': ' + letter_data.auctioneername],
+                        ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
+                        ['Hirer’s Name ', ':     ' + letter_data.custname],
+                        ['Unit Financed ', ':     ' + letter_data.vehiclemake + ' & ' + letter_data.vehiclemodel],
+                        ['Registration No ', ':     ' + letter_data.vehicleregno],
                     ]
                 },
                 layout: 'noBorders',
@@ -104,31 +114,19 @@ router.post('/download', function (req, res) {
             {
                 text: [
                     '\nAccording to our records, the monthly rental of the above Asset finance Agreement is now in arrears. The total amount due is ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.ipfBalance)).format('0,0.00'), fontSize: 10, bold: true },
-                    ' & ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.afBalance)).format('0,0.00'), fontSize: 10, bold: true },
-                    ' and ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.odBalance)).format('0,0.00'), fontSize: 10, bold: true },
-                    ' and others.',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalamount)).format('0,0.00'), fontSize: 10, bold: true },
+                    '. ',
                 ]
 
             },
             {
                 text: [
-                    'A further rental of ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.nextScheduleAmount)).format('0,0.00'), fontSize: 10, bold: true },
-                    ' becomes due on ',
-                    { text: letter_data.nextScheduleDate, fontSize: 10, bold: true },
-                    ' cumulatively amounting to ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
-                    '.',
-                ]
-            },
-            {
-                text: [
                     '\nPlease approach the above named Hirer on our behalf and collect the total sum of ',
-                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
-                    ' plus your own charges, failing which you may take this letter as your authority to effect immediate re-possession of the above/equipment without further reference to us. HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED. From our records, we are able to give the following additional information regarding this Agreement, which may assist you in your task of locating the hirer and/or the motor vehicle/equipment:-',
+                    { text: 'Kes. ' + numeral(Math.abs(letter_data.totalamount)).format('0,0.00'), fontSize: 10, bold: true },
+                    ' plus your own charges, failing which you may take this letter as your authority to effect immediate re-possession',
+                    ' of the above/equipment without further reference to us.',
+                    { text: 'HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED.', fontSize: 10, bold: true},
+                    'From our records, we are able to give the following additional information regarding this Agreement, which may assist you in your task of locating the hirer and/or the motor vehicle/equipment:-',
                 ]
             },
             '\n',
@@ -138,33 +136,37 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [200, '*'],
                     body: [
-                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
+                        [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
                         ['Postal Address', ':      ' + letter_data.postaladdress || 'N/A'],
-                        ['Telephone', ':     ' + letter_data.phoneNumber || 'N/A'],
+                        ['Telephone', ':     ' + letter_data.celnumber || 'N/A'],
                         ['Physical Address/Location', ':     ' + letter_data.place || 'N/A'],
                         ['Type of Business', ':      ' + letter_data.typeofbusiness || 'N/A'],
-                        ['Bankers and Branch', ':     ' + letter_data.branchName || 'N/A'],
-                        ['Purpose of Vehicle', ':     ' + letter_data.purposeofVehicle || 'N/A'],
-                        ['Guarantors', ':     ' + letter_data.Guarantors || 'N/A'],
-                        ['Guarantors Address', ':     ' + letter_data.GuarantorsAddress || 'N/A'],
-                        ['Chassis No.', ':     ' + letter_data.chasisNumber || 'N/A'],
-                        ['Engine No.', ':     ' + letter_data.EngineNo || 'N/A'],
-                        ['Any other information', ':     ' + letter_data.otherInformation || 'N/A']
+                        ['Bankers and Branch', ':     ' + letter_data.branchname || 'N/A'],
+                        ['Purpose of Vehicle', ':     ' + letter_data.purposeofvehicle || 'N/A'],
+                        ['Guarantors', ':     ' + letter_data.guarantors || 'N/A'],
+                        ['Guarantors Address', ':     ' + letter_data.guarantorsaddress || 'N/A'],
+                        ['Chassis No.', ':     ' + letter_data.chassisnumber || 'N/A'],
+                        ['Engine No.', ':     ' + letter_data.engineno || 'N/A'],
+                        ['Any other information', '     ' + letter_data.anyotherinfo || 'N/A']
                     ]
                 },
                 layout: 'noBorders',
 
             },
 
-            { text: '\n\nVehicle tracked by: ' + letter_data.trackingCompany, fontSize: 10, alignment: 'left' },
+            { text: '\n\nVehicle tracked by: ' + letter_data.trackingcompany, fontSize: 10, alignment: 'left' },
 
             { text: '\nYours Faithfully,' },
-            { text: '\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
-            { text: 'This letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
+
+
+            { text: '\n\n\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
+            { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.customerName },
+            { text: '' + letter_data.custname },
             { text: '' + letter_data.postaladdress }
         ],
 
@@ -205,32 +207,61 @@ router.post('/download', function (req, res) {
     }
 
     var pdfDoc = printer.createPdfKitDocument(docDefinition, options);
-    writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf");
+    writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf");
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
     writeStream.on('finish', function () {
-        res.json({
-            result: 'success',
-            message: LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
-            filename: letter_data.accnumber + DATE + "repossession.pdf"
-        })
+        // res.json({
+        //     result: 'success',
+        //     message: LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
+        //     filename: letter_data.accnumber + DATE + "repossession.pdf"
+        // })
+        // save to minio
+        const filelocation = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
+        const bucket = 'demandletters';
+        const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "repossession.pdf"
+        var metaData = {
+            'Content-Type': 'text/html',
+            'Content-Language': 123,
+            'X-Amz-Meta-Testing': 1234,
+            'example': 5678
+        }
+        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+            if (error) {
+                console.log(error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                })
+                // deleteFile(filelocation);
+            }
+            res.json({
+                result: 'success',
+                message: LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf",
+                filename: accnumber_masked + DATE + "repossession.pdf",
+                savedfilename: savedfilename,
+                objInfo: objInfo
+            })
+            // deleteFile(filelocation);
+        });
+        //save to mino end
 
         // send email
-        emaildata.customerName = letter_data.customerName,
-            emaildata.email = letter_data.auctioneerEmail,
+        emaildata.customerName = letter_data.custname,
+            emaildata.email = letter_data.auctioneeremail,
             emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
-            emaildata.vehicleRegnumber = letter_data.vehicleRegnumber,
-            emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
-            emaildata.cc = [letter_data.customerEmail];
+            emaildata.vehicleRegnumber = letter_data.vehicleregno,
+            emaildata.path = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf",
+            emaildata.cc = [letter_data.emailaddress];
 
 
         let transporter = nodemailer.createTransport({
-            host: 'smtp.ofice365.com',
+            host: 'smtp.gmail.com',
             port: 587,
             secure: false, // true for 465, false for other ports
             auth: {
-                user: 'ecollect@co-opbank.co.ke',
-                pass: 'abc.123'
+                user: 'ecollectadmin',
+                pass: 'W1ndowsxp'
             }
         });
 
@@ -285,5 +316,14 @@ router.post('/download', function (req, res) {
 
     });
 });
+// function deleteFile(req) {
+//     fs.unlink(req, (err) => {
+//         if (err) {
+//             console.error(err)
+//             return
+//         }
+//         //file removed
+//     })
+// }
 
 module.exports = router;
