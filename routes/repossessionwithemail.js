@@ -48,7 +48,7 @@ router.post('/download', function (req, res) {
     const letter_data = req.body;
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
-    const rawaccnumber = letter_data.ACCNUMBER;
+    const rawaccnumber = letter_data.accnumber;
     const repodate = letter_data.daterepoissued;
     const repodate2 = dateFormat(repodate, "dd-mmm-yyyy");
     const first4 = rawaccnumber.substring(0, 9);
