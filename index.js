@@ -30,6 +30,7 @@ var investigations = require('./routes/investigations');
 var investigationswithemail = require('./routes/investigationswithemail');
 var valuation = require('./routes/valuation');
 var valuationwithemail = require('./routes/valuationwithemail');
+var repossessionsendphy = require('./routes/repossessionsendphy');
 
 app.use('/docx/demand2', demand2);
 app.use('/docx/demand1', demand1);
@@ -55,8 +56,9 @@ app.use('/docx/investigators', investigations);
 app.use('/docx/investigatorswithemail', investigationswithemail);
 app.use('/docx/valuation', valuation);
 app.use('/docx/valuationwithemail', valuationwithemail);
+app.use('/docx/repossessionsendphy', repossessionsendphy);
 
-router.get('/', function (req, res) {
+router.get('/', function (req, res) { 
   res.json({ message: 'Demand letters ready Home!' });
 });
 

@@ -11,7 +11,7 @@ require('log-timestamp');
 
 var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-    port: process.env.MINIO_PORT || 9005,
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
     useSSL: false, 
     accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
     secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
@@ -399,6 +399,7 @@ router.post('/download', function (req, res) {
                             success: false,
                             error: error.message
                         })
+                        deleteFile(filelocation);
                     }
                     res.json({
                         result: 'success',
@@ -407,6 +408,7 @@ router.post('/download', function (req, res) {
                         savedfilename: savedfilename,
                         objInfo: objInfo
                     })
+                    deleteFile(filelocation);
                 });
                 //save to mino end
 
@@ -448,5 +450,15 @@ router.post('/download', function (req, res) {
         });
     });
 });
+
+function deleteFile(req) {
+    fs.unlink(req, (err) => {
+        if (err) {
+            console.error(err)
+            return
+        }
+        //file removed
+    })
+}
 
 module.exports = router;
