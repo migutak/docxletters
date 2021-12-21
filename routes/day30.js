@@ -6,7 +6,7 @@ var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
 const cors = require('cors');
-
+require('log-timestamp');
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
@@ -52,7 +52,7 @@ router.post('/download', function (req, res) {
 
   //logo start
   if (INCLUDELOGO == true) {
-    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync("coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
