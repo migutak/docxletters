@@ -253,7 +253,7 @@ router.post('/download', function (req, res) {
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "day30.docx", buffer);
     //conver to pdf
     // if pdf format
-    if (letter_data.format == 'pdf') {
+    /*if (letter_data.format == 'pdf') {
       const convert = () => {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day30.docx")
           .then(data => {
@@ -294,7 +294,7 @@ router.post('/download', function (req, res) {
           })
       }
       convert();
-    } else {
+    } else {*/
       // save to minio
       const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day30.docx";
       const bucket = 'demandletters';
@@ -322,7 +322,7 @@ router.post('/download', function (req, res) {
         })
       });
       //save to mino end
-    }
+   // }
   }).catch((err) => {
     console.log(err);
     res.json({

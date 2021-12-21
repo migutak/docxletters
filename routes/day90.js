@@ -8,6 +8,7 @@ const word2pdf = require('word2pdf-promises');
 const cors = require('cors');
 require('log-timestamp');
 
+
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
@@ -127,7 +128,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(paragraphheadertext);
 
   document.createParagraph(" ");
-  document.createParagraph("We refer to our notice dated xxxxxxxxxxx. ");
+  document.createParagraph("We refer to our notice dated "+dateFormat(new Date(), 'fullDate')+".");
 
   document.createParagraph(" ");
   const txt3 = new TextRun("As you are fully aware and despite the referenced notice, the above account is in arrears of " + letter_data.accounts[0].currency + ' ' + numeral(letter_data.accounts[0].oustbalance).format('0,0.0') + " dr as at (Date) which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)) and late penalties of 0.5% per month and further the total outstanding sum due to the Bank as at " + DATE + " is " + letter_data.accounts[0].currency + ' ' + numeral(letter_data.accounts[0].oustbalance).format('0,0.0') + ". dr which continues to accrue interest at xxx% per annum (equivalent to Kenya Bank's Reference Rate (KBRR) currently at xxxx% plus a margin of xxx% (K)).");
@@ -139,7 +140,7 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
   document.createParagraph("The liabilities are secured by way of a Legal charge over the properties: ");
-  document.createParagraph("L.R.NO. xxxxxxxxxxxxxxxx registered in the name of xxxxxxxxxxxx")
+  document.createParagraph("L.R.NO. "+letter_data.lrno.toUpperCase()+" registered in the name of "+letter_data.regowner.toUpperCase()+".")
   document.createParagraph(" ");
 
 
@@ -183,7 +184,7 @@ router.post('/download', function (req, res) {
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "day90.docx", buffer);
     //conver to pdf
     // if pdf format
-    if (letter_data.format == 'pdf') {
+    /*if (letter_data.format == 'pdf') {
       const convert = () => {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day90.docx")
           .then(data => {
@@ -223,8 +224,9 @@ router.post('/download', function (req, res) {
             });
           })
       }
-      convert();
-    } else {
+      //convert();
+      // pdf version
+    } else {*/
       // save to minio
       const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day90.docx";
       const bucket = 'demandletters';
@@ -252,7 +254,7 @@ router.post('/download', function (req, res) {
         })
       });
       //save to mino end
-    }
+    //}
   }).catch((err) => {
     console.log(err);
     res.json({
