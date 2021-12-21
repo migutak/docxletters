@@ -160,8 +160,8 @@ router.post('/download', function (req, res) {
 
 
 
-            { text: '\n\n\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
-            { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+            { text: '\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
+            { text: '\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 
 
@@ -249,21 +249,22 @@ router.post('/download', function (req, res) {
         // send email
         emaildata.customerName = letter_data.custname,
             emaildata.email = letter_data.auctioneeremail,
-            emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
             emaildata.vehicleRegnumber = letter_data.vehicleregno,
-            emaildata.path = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf",
-            emaildata.cc = [letter_data.emailaddress];
+            emaildata.path = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
+           // emaildata.cc = [letter_data.emailaddress];
 
 
-        let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // true for 465, false for other ports
+        var transporter = nodemailer.createTransport({
+            host: data.smtpserver,
+            port: data.smtpport,
+            secure: false, // upgrade later with STARTTLS
+            tls: { rejectUnauthorized: false },
+            debug: true,
             auth: {
-                user: 'ecollectadmin',
-                pass: 'W1ndowsxp'
+              user: data.smtpuser,
+              pass: data.pass
             }
-        });
+          });
 
         // verify connection configuration
         transporter.verify(function (error, success) {
@@ -275,7 +276,7 @@ router.post('/download', function (req, res) {
         });
 
         var mailOptions = {
-            from: 'ecollect@co-opbank.co.ke',
+            from: data.smtpuser,
             to: emaildata.email,
             cc: emaildata.cc,
             subject: "Repossession Order - " + emaildata.customerName + " VEHICLE REG NO.: " + emaildata.vehicleRegnumber,
