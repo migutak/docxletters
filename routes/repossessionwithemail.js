@@ -285,11 +285,14 @@ router.post('/download', function (req, res) {
                 'Please find attached repossession order for the above customer.<br>' +
                 '<p>Kindly note this is an automated delivery system; do not reply to this email address</p>' +
                 '<br>' +
-                'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
-                'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
+                //'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
+                //'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
                 '<br>' +
                 'Best Regards,<br>' +
+                emaildata.rmname + ',<br>' +
                 'Co-operative Bank of Kenya' +
+                'Tel: ' + emaildata.rmtel +
+                'Email: ' + emaildata.rmemail +
                 '<br> <br>',
             attachments: [
                 {
