@@ -8,5 +8,6 @@ module.exports = {
     pass:  process.env.PASS || 'W1ndowsxp',
     footerfirst : process.env.footerfirst || 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman), ',
     footersecond : process.env.footersecond || 'J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, W. Welton (Mrs), M. Karangatha (Mrs), L. Karissa, G. Mburia',
-    footeroneline : process.env.footersecond || 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman), J. Sitienei, B. Simiyu, P. Githendu, W.Ongoro, R.Kimanthi, W. Mwambia, W. Welton (Mrs), M. Karangatha (Mrs), L. Karissa, G. Mburia'
+    footeroneline : process.env.footersecond || 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group M.D & CEO), M. Malonza (Vice Chairman), J. Sitienei, B. Simiyu, P. Githendu, W.Ongoro, R.Kimanthi, W. Mwambia, W. Welton (Mrs), M. Karangatha (Mrs), L. Karissa, G. Mburia',
+    interestrate: process.env.INTERESTRATE || '13%',
 };

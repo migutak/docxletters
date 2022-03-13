@@ -13,6 +13,7 @@
     "@elastic/ecs-morgan-format": "^1.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
+    "date-and-time": "^2.3.0",
     "dateformat": "^3.0.3",
     "docx": "^4.7.1",
     "express": "^4.16.4",
