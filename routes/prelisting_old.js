@@ -5,19 +5,17 @@ const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const cors = require('cors');
-const date = require('date-and-time');
-const now = new Date();
+require('log-timestamp');
+
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
-  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-  port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
-  useSSL: false, 
-  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
-  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
+    useSSL: false, 
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
-
-
 
 var data = require('./data.js');
 
@@ -183,7 +181,7 @@ router.post('/download', function (req, res) {
     table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency + ' 0.00'));
     table.getCell(row, 7).addContent(new Paragraph('Over 60 days'));
-    table.getCell(row, 8).addContent(new Paragraph(data.interestrate));
+    table.getCell(row, 8).addContent(new Paragraph('14%'));
   }
 
   document.createParagraph(" ");
@@ -199,7 +197,7 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt);
 
   document.createParagraph(" ");
-  const txt2 = new TextRun("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before " + dateFormat(date.addDays(now, 14), "dd-mmm-yyyy") + ", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;.");
+  const txt2 = new TextRun("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before " + dateFormat(new Date() + 14, "dd-mmm-yyyy") + ", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;.");
   const ptxt2 = new Paragraph();
   txt2.size(20);
   ptxt2.addRun(txt2);
@@ -332,7 +330,7 @@ router.post('/download', function (req, res) {
         DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR',
         DATA[i].currency + ' 0.00',
           'Over 60 days',
-          data.interestrate
+          '14%'
         ])
       }
 
@@ -354,6 +352,7 @@ router.post('/download', function (req, res) {
         pageMargins: [50, 50, 50, 50],
         footer: {
           columns: [
+            //{ text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
             { text: data.footeroneline }
           ],
           style: 'superMargin'
@@ -373,14 +372,12 @@ router.post('/download', function (req, res) {
                 fontSize: 9,
                 ol: [
                   'The Co-operative Bank of Kenya Limited',
-                  'Head Office',
-                  'The Co-operative Bank of Kenya Limited',
                   'Co-operative Bank House',
                   'Haile Selassie Avenue',
-                  'P.O.Box 48231-00100 GPO, Nairobi',
+                  'P.O. Box 48231-00100 GPO, Nairobi',
                   'Tel: (020) 3276100',
                   'Fax: (020) 2227747/2219831',
-                  { text: 'Website: www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                  'www.co-opbank.co.ke'
                 ]
               },
             ],
@@ -444,7 +441,7 @@ router.post('/download', function (req, res) {
 
           { text: '\nKindly also note that under the provisions of the Banking (Credit Reference Bureau) Regulations 2013, it is now a mandatory requirement in law that all financial institutions share positive and negative credit information while assessing customers credit worthiness, standing and capacity through duly licensed Credit Reference Bureaus (CRBs) for inclusion and maintenance in their database for purposes of sharing the said information', fontSize: 10 },
 
-          { text: '\nKindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before ' + dateFormat(date.addDays(now, 14), "dd-mmm-yyyy") + ', failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;', fontSize: 10 },
+          { text: '\nKindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before 23-Sep-2019, failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;', fontSize: 10 },
 
           { text: '\nWe hereby notify you that we will proceed to adversely list you with the CRBs if your loan (s) becomes nonperforming. To avoid an adverse listing, you are advised to clear the outstanding arrears.', fontSize: 10 },
 

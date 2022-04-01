@@ -9,10 +9,10 @@ const cors = require('cors');
 var Minio = require("minio");
 var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-    port: process.env.MINIO_PORT || 9005,
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
     useSSL: false,
-    accessKey: process.env.ACCESSKEY || 'minioadmin',
-    secretKey: process.env.SECRETKEY || 'minioadmin'
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
 
 var data = require('./data.js');
@@ -46,7 +46,6 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
-console.log(letter_data);
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
     const rawaccnumber = letter_data.accnumber;
@@ -161,8 +160,8 @@ console.log(letter_data);
 
 
 
-            { text: '\n\n\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
-            { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+            { text: '\n\nAUTHORISED SIGNATORY,                                                                           AUTHORISED SIGNATORY', style: 'tableHeader' },
+            { text: '\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 
 
@@ -250,21 +249,22 @@ console.log(letter_data);
         // send email
         emaildata.customerName = letter_data.custname,
             emaildata.email = letter_data.auctioneeremail,
-            emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
             emaildata.vehicleRegnumber = letter_data.vehicleregno,
-            emaildata.path = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf",
-            emaildata.cc = [letter_data.emailaddress];
+            emaildata.path = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
+           // emaildata.cc = [letter_data.emailaddress];
 
 
-        let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // true for 465, false for other ports
+        var transporter = nodemailer.createTransport({
+            host: data.smtpserver,
+            port: data.smtpport,
+            secure: false, // upgrade later with STARTTLS
+            tls: { rejectUnauthorized: false },
+            debug: true,
             auth: {
-                user: 'allanmaroko10',
-                pass: 'Vipermarox411'
+              user: data.smtpuser,
+              pass: data.pass
             }
-        });
+          });
 
         // verify connection configuration
         transporter.verify(function (error, success) {
@@ -276,7 +276,7 @@ console.log(letter_data);
         });
 
         var mailOptions = {
-            from: 'ecollect@co-opbank.co.ke',
+            from: data.smtpuser,
             to: emaildata.email,
             cc: emaildata.cc,
             subject: "Repossession Order - " + emaildata.customerName + " VEHICLE REG NO.: " + emaildata.vehicleRegnumber,
@@ -285,11 +285,14 @@ console.log(letter_data);
                 'Please find attached repossession order for the above customer.<br>' +
                 '<p>Kindly note this is an automated delivery system; do not reply to this email address</p>' +
                 '<br>' +
-                'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
-                'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
+                //'For any queries, kindly contact Customer Service on phone numbers: 0703027000/ 020 2776000 | SMS:16111 | <br>' +
+                //'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
                 '<br>' +
                 'Best Regards,<br>' +
+                emaildata.rmname + ',<br>' +
                 'Co-operative Bank of Kenya' +
+                'Tel: ' + emaildata.rmtel +
+                'Email: ' + emaildata.rmemail +
                 '<br> <br>',
             attachments: [
                 {

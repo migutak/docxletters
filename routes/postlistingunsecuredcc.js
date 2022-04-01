@@ -4,12 +4,13 @@ const docx = require('docx');
 const fs = require('fs');
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
-const cors = require('cors')
+const cors = require('cors');
 var Minio = require("minio");
+require('log-timestamp');
 
 var minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-  port: process.env.MINIO_PORT || 9005,
+  port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
   useSSL: false,
   accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
   secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'

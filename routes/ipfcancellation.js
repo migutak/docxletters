@@ -2,10 +2,18 @@ var express = require('express');
 var router = express.Router();
 const fs = require('fs');
 var numeral = require('numeral');
-const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const cors = require('cors');
+var Minio = require("minio");
+require('log-timestamp');
 
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
+    useSSL: false, 
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 var data = require('./data.js');
 
 const LETTERS_DIR = data.filePath;
@@ -21,13 +29,9 @@ var fonts = {
 var PdfPrinter = require('pdfmake');
 var printer = new PdfPrinter(fonts);
 
-router.use(bodyParser.urlencoded({
-    extended: true
-}));
-
-router.use(bodyParser.json());
+router.use(express.urlencoded({ extended: true }));
+router.use(express.json());
 router.use(cors());
-
 
 router.get('/', function (req, res) {
     res.json({ message: 'Ipf cancellation letter is ready!' });
@@ -174,15 +178,37 @@ router.post('/download', function (req, res) {
     }
 
     var pdfDoc = printer.createPdfKitDocument(docDefinition, options);
-    writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf");
+    const filelocation = LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf";
+    writeStream = fs.createWriteStream(filelocation);
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
     writeStream.on('finish', function () {
-        res.json({
-            result: 'success',
-            message: LETTERS_DIR + letter_data.accnumber + DATE + "ipfcancellation.pdf",
-            filename: letter_data.accnumber + DATE + "ipfcancellation.pdf"
-        })
+        // save to minio
+        const bucket = 'demandletters';
+        const savedfilename = letter_data.accnumber  + '_' + Date.now() + '_' + "ipfcancellation.pdf"
+        var metaData = {
+            'Content-Type': 'text/html',
+            'Content-Language': 123,
+            'X-Amz-Meta-Testing': 1234,
+            'example': 5678
+        }
+        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+            if (error) {
+                console.log(error);
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                })
+            }
+            res.json({
+                result: 'success',
+                message: filelocation,
+                filename: filelocation,
+                savedfilename: savedfilename,
+                objInfo: objInfo
+            })
+        });
+        //save to mino end
     });
 });
 

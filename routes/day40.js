@@ -6,12 +6,12 @@ var numeral = require('numeral');
 var dateFormat = require('dateformat');
 const word2pdf = require('word2pdf-promises');
 const cors = require('cors');
-
+require('log-timestamp');
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-  port: process.env.MINIO_PORT || 9005,
+  port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
   useSSL: false,
   accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
   secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
@@ -52,7 +52,7 @@ router.post('/download', function (req, res) {
 
   //logo start
   if (INCLUDELOGO == true) {
-    document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
+    document.createImage(fs.readFileSync("coop.jpg"), 350, 60, {
       floating: {
         horizontalPosition: {
           offset: 1000000,
@@ -118,7 +118,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: NOTIFICATION OF SALE OF PROPERTY L.R NO. xxxxxxxxxxxxxxxxx	");
+  const headertext = new TextRun("RE: NOTIFICATION OF SALE OF PROPERTY L.R NO. "+letter_data.lrno.toUpperCase()+"	");
   const paragraphheadertext = new Paragraph();
   headertext.bold();
   headertext.underline();
@@ -137,13 +137,13 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt3);
 
   document.createParagraph(" ");
-  document.createParagraph("The said facility is secured by inter alia, a legal charge over L.R NO. xx registered in the name of xxxxxx.");
+  document.createParagraph("The said facility is secured by inter alia, a legal charge over L.R NO. "+letter_data.lrno.toUpperCase()+" registered in the name of "+letter_data.regowner.toUpperCase()+".");
   document.createParagraph(" ");
 
   const note1 = new TextRun("TAKE NOTICE");
   note1.bold();
   note1.size(24);
-  const note = new TextRun("TAKE NOTICE that pursuant to the provisions of Section 96(2) of the Land Act, 2012 the Bank intends to exercise its statutory power of sale over L.R NO. xxxxxx aforesaid after expiry of FORTY (40) DAYS from the date of service of this Notice upon yourself unless you rectify the default and all the outstanding balances owned to the Bank are fully settled within the aforesaid period. ");
+  const note = new TextRun("TAKE NOTICE that pursuant to the provisions of Section 96(2) of the Land Act, 2012 the Bank intends to exercise its statutory power of sale over L.R NO. "+letter_data.lrno.toUpperCase()+" aforesaid after expiry of FORTY (40) DAYS from the date of service of this Notice upon yourself unless you rectify the default and all the outstanding balances owned to the Bank are fully settled within the aforesaid period. ");
   const pnote = new Paragraph();
 
   pnote.addRun(note);
@@ -182,7 +182,7 @@ router.post('/download', function (req, res) {
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "day40.docx", buffer);
     //conver to pdf
     // if pdf format
-    if (letter_data.format == 'pdf') {
+    /*if (letter_data.format == 'pdf') {
       const convert = () => {
         word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day40.docx")
           .then(data => {
@@ -223,7 +223,7 @@ router.post('/download', function (req, res) {
           })
       }
       convert();
-    } else {
+    } else {*/
       // save to minio
       const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day40.docx";
       const bucket = 'demandletters';
@@ -251,7 +251,7 @@ router.post('/download', function (req, res) {
         })
       });
       //save to mino end
-    }
+    //}
   }).catch((err) => {
     console.log(err);
     res.json({

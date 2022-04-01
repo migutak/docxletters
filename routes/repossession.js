@@ -9,10 +9,10 @@ const cors = require('cors');
 var Minio = require("minio");
 var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-    port: process.env.MINIO_PORT || 9005,
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
     useSSL: false,
-    accessKey: process.env.ACCESSKEY || 'minioadmin',
-    secretKey: process.env.SECRETKEY || 'minioadmin'
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
 
 var data = require('./data.js');
