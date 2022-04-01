@@ -4,14 +4,14 @@ const docx = require('docx');
 const fs = require('fs');
 var numeral = require('numeral');
 var dateFormat = require('dateformat');
-// const word2pdf = require('word2pdf');
+require('log-timestamp');
 var data = require('./data.js');
 const cors = require('cors')
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-  port: process.env.MINIO_PORT || 9005,
+  port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
   useSSL: false,
   accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
   secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
@@ -268,7 +268,8 @@ router.post('/download', function (req, res) {
         pageMargins: [50, 60, 50, 60],
         footer: {
           columns: [
-            { text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+            //{ text: 'Directors: John Murugu (Chairman), Dr. Gideon Muriuki (Group Managing Director & CEO), M. Malonza (Vice Chairman),J. Sitienei, B. Simiyu, P. Githendu, W. Ongoro, R. Kimanthi, W. Mwambia, R. Simani (Mrs), L. Karissa, G. Mburia.\n\n' }
+            { text: data.footeroneline }
           ],
           style: 'superMargin'
         },

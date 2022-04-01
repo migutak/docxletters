@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const nodemailer = require("nodemailer");
 const fs = require('fs');
-var numeral = require('numeral');
+require('log-timestamp');
 const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const cors = require('cors');

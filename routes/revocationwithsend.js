@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 var dateFormat = require('dateformat');
 const nodemailer = require("nodemailer");
 const cors = require('cors');
+require('log-timestamp');
 
 var data = require('./data.js');
 const emaildata = {};

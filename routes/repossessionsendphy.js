@@ -9,10 +9,10 @@ const cors = require('cors');
 var Minio = require("minio");
 var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-    port: process.env.MINIO_PORT || 9005,
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
     useSSL: false,
-    accessKey: process.env.ACCESSKEY || 'minioadmin',
-    secretKey: process.env.SECRETKEY || 'minioadmin'
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
 
 var data = require('./data.js');
@@ -98,9 +98,9 @@ router.post('/download', function (req, res) {
                     widths: [250, '*'],
                     body: [
                         [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
-                        ['Date: ' + repodate2, 'Valid up to: ' + DATEEXPIRY],
-                        ['To ', ': ' + letter_data.auctioneername],
-                        ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
+                        ['Date: ' + repodate2.toUpperCase(), 'Valid up to: ' + (letter_data.expirydate).toUpperCase()],
+                        ['To ', ':     ' + letter_data.auctioneername],
+                        ['Asset Finance Agreement No.', ':     ' + letter_data.assetfaggnum],
                         ['Hirer’s Name ', ':     ' + letter_data.custname],
                         ['Unit Financed ', ':     ' + letter_data.vehiclemake + ' & ' + letter_data.vehiclemodel],
                         ['Registration No ', ':     ' + letter_data.vehicleregno],
@@ -137,16 +137,16 @@ router.post('/download', function (req, res) {
                     widths: [200, '*'],
                     body: [
                         [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
-                        ['Postal Address', ':' + letter_data.postaladdress || 'N/A'],
-                        ['Telephone', ':' + letter_data.celnumber || 'N/A'],
-                        ['Physical Address/Location', ':' + letter_data.place || 'N/A'],
-                        ['Type of Business', ':' + letter_data.typeofbusiness || 'N/A'],
-                        ['Bankers and Branch', ':' + letter_data.branchname || 'N/A'],
-                        ['Purpose of Vehicle', ':' + letter_data.purposeofvehicle || 'N/A'],
-                        ['Guarantors', ':' + letter_data.guarantors || 'N/A'],
-                        ['Guarantors Address', ':' + letter_data.guarantorsaddress || 'N/A'],
-                        ['Chassis No.', ':' + letter_data.chassisnumber || 'N/A'],
-                        ['Engine No.', ':' + letter_data.engineno || 'N/A'],
+                        ['Postal Address', ': ' + letter_data.postaladdress || 'N/A'],
+                        ['Telephone', ': ' + letter_data.celnumber || 'N/A'],
+                        ['Physical Address/Location', ': ' + letter_data.place || 'N/A'],
+                        ['Type of Business', ': ' + letter_data.typeofbusiness || 'N/A'],
+                        ['Bankers and Branch', ': ' + letter_data.branchname || 'N/A'],
+                        ['Purpose of Vehicle', ': ' + letter_data.purposeofvehicle || 'N/A'],
+                        ['Guarantors', ': ' + letter_data.guarantors || 'N/A'],
+                        ['Guarantors Address', ': ' + letter_data.guarantorsaddress || 'N/A'],
+                        ['Chassis No.', ': ' + letter_data.chassisnumber || 'N/A'],
+                        ['Engine No.', ': ' + letter_data.engineno || 'N/A'],
                         ['Any other information', '     ' + letter_data.anyotherinfo || 'N/A']
                     ]
                 },
