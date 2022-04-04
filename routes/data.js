@@ -3,9 +3,8 @@ module.exports = {
     filePath        : process.env.FILEPATH || "C:/Users/allan/Videos/generatedletters/",
     imagePath       : process.env.IMAGEPATH || '/app/docxletters/routes/', // 'd:\\angularprojects\\docxletters\\routes\\',
     SENDEMAILURL     : process.env.SENDEMAILURL || 'http://172.16.204.72:8005/ipfcancellation/email',
-    smtpserver: process.env.SMTPSERVER || 'smtp.gmail.com', //host: 'smtp.gmail.com',office365.officer
-    smtpport: process.env.SMTPPORT || 465,
-    smtpuser: process.env.SMTPUSER || 'allanmaroko',
+    smtpport: process.env.SMTPPORT || 587,  // 465 FOR SECURE OR PROD
+    smtpuser:  'allanmaroko10',
     pass:  process.env.PASS || 'Vipermarox411',
     smtpserver: process.env.SMTPSERVER || 'smtp.gmail.com',   // office365.officer
     secure: false,

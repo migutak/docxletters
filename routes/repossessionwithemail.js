@@ -291,10 +291,10 @@ router.post('/download', function (req, res) {
                 //'Email: customerservice@co-opbank.co.ke | Twitter handle: @Coopbankenya | Facebook: Co-opBank Kenya | WhatsApp:0736690101<br>' +
                 '<br>' +
                 'Best Regards,<br>' +
-                emaildata.rmname + ',<br>' +
-                'Co-operative Bank of Kenya' +
-                'Tel: ' + emaildata.rmtel +
-                'Email: ' + emaildata.rmemail +
+                letter_data.rmname + ',<br>' +
+                'Co-operative Bank of Kenya,<br>' +
+                'Tel: ' + letter_data.rmtelnumber + ',<br>' +
+                'Email: ' + letter_data.rmemail +
                 '<br> <br>',
             attachments: [
                 {
