@@ -62,6 +62,11 @@ router.post('/download', function (req, res) {
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
+
+
+
+console.log(DATA.oustbalance);
+    // console.log(req.body.accounts);
     let NOTICE = 'fourteen days (14)';
     //
     //
@@ -248,6 +253,8 @@ router.post('/download', function (req, res) {
                 DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].instamount)).format('0,0.00') + ' DR'
                 ])
             }
+            console.log(DATA[i].oustbalance);
+            console.log(DATA[i].instamount);
 
             function guarantors() {
                 if (GUARANTORS.length > 0) {
