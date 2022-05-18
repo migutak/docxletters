@@ -192,7 +192,7 @@ router.post('/download', function (req, res) {
         table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intratearr)).format('0,0.00') + ' DR'));
         table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
         table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR'));
-        table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency.concat(Math.abs(Number.parseInt(DATA[i].oustbalance, 10)) + (Math.abs(Number.parseInt(DATA[i].oustbalance, 10))))));
+        table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency.concat(" ").concat(Math.abs(Number.parseInt(DATA[i].oustbalance, 10)) + (Math.abs(Number.parseInt(DATA[i].oustbalance, 10)))).concat(" ").concat("DR")));
 
 
     }
