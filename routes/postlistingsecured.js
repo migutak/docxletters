@@ -75,13 +75,15 @@ router.post('/download', function (req, res) {
   }
   // logo end
 
-  document.createParagraph("The Co-operative Bank of Kenya Limited").right();
-  document.createParagraph("Co-operative Bank House").right();
-  document.createParagraph("Haile Selassie Avenue").right();
-  document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").right();
-  document.createParagraph("Tel: (020) 3276100").right();
-  document.createParagraph("Fax: (020) 2227747/2219831").right();
-  document.createParagraph("Website: www.co-opbank.co.ke").right();
+  document.createParagraph("The Co-operative Bank of Kenya Limited").left();
+  document.createParagraph("Head Office").left();
+  document.createParagraph("The Co-operative Bank of Kenya Limited").left();
+  document.createParagraph("Co-operative Bank House").left();
+  document.createParagraph("Haile Selassie Avenue").left();
+  document.createParagraph("P.O.Box 48231-00100 GPO, Nairobi").left();
+  document.createParagraph("Tel: (020) 3276100").left();
+  document.createParagraph("Fax: (020) 2227747/2219831").left();
+  document.createParagraph("Website: www.co-opbank.co.ke").left();
 
   document.createParagraph(" ");
 
