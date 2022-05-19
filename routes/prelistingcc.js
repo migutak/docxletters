@@ -286,14 +286,16 @@ router.post('/download', function (req, res) {
                 type: 'none',
                 alignment: 'right',
                 fontSize: 9,
-                ol: [
+                ol:[
+                  'The Co-operative Bank of Kenya Limited',
+                  'Head Office',
                   'The Co-operative Bank of Kenya Limited',
                   'Co-operative Bank House',
                   'Haile Selassie Avenue',
-                  'P.O. Box 48231-00100 GPO, Nairobi',
+                  'P.O.Box 48231-00100 GPO, Nairobi',
                   'Tel: (020) 3276100',
                   'Fax: (020) 2227747/2219831',
-                  { text: 'www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
+                  { text: 'Website: www.co-opbank.co.ke', color: 'blue', link: 'http://www.co-opbank.co.ke' }
                 ]
               },
             ],

@@ -46,6 +46,7 @@ router.get('/', function (req, res) {
 
 router.post('/download', function (req, res) {
     const letter_data = req.body;
+    console.log(letter_data);
     const rawaccnumber = letter_data.acc;
     const first4 = rawaccnumber.substring(0, 9);
     accnumber_masked = first4 + 'xxxxx';
