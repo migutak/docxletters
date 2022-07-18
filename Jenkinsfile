@@ -10,9 +10,12 @@ node {
 
       stage('Test'){
 
-          sh 'echo Testing stage ...'
-
+        script {
+          currentDateTime = sh(returnStdout: true, script: 'date -d \'+3 hour\' +%d%m%Y%H%M%S').trim()
         }
+        sh "echo ...tests on ..ddmmyyyhhmmss.. ${currentDateTime}"
+
+      }
 
       stage('Push image') {
         /* Finally, we'll push the image with two tags:
@@ -20,7 +23,7 @@ node {
          * Second, the 'latest' tag.
          * Pushing multiple tags is cheap, as all the layers are reused. */
         docker.withRegistry('https://registry.hub.docker.com', 'docker_credentials') {
-            app.push("${env.BUILD_NUMBER}")
+            app.push("${currentDateTime}.${env.BUILD_NUMBER}")
             app.push("latest")
         }
       }
