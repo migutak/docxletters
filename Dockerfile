@@ -15,5 +15,5 @@ EXPOSE 8004
 
 CMD ["node", "index.js"]
 
-#  docker build -t migutak/docxletters:5.7.2 .
+#  docker build -t migutak/docxletters:5.7.3 .
 
