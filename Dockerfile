@@ -6,6 +6,7 @@ WORKDIR /app/docxletters
 
 RUN chown node:node -R /app
 USER node
+
 # Install app dependency
 COPY --chown=node package*.json ./
 RUN npm install --production
