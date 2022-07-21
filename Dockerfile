@@ -1,4 +1,4 @@
-FROM node:16-buster-slim
+FROM node:18-alpine3.15
 
 RUN mkdir -p /app/nfs/demandletters
 RUN mkdir -p /app/docxletters
