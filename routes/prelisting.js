@@ -151,7 +151,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Please note that your loans are currently in default with outstanding balances and arrears, having not paid the full instalments. These loans continue to accrue interest at various rates per annum. Here below please find the loan/overdrawn particulars: ");
   document.createParagraph(" ");
 
-  // table 1
+  // table 1 
   const table1 = document.createTable(DATA.length + 2, 3);
   table1.getCell(0, 1).addContent(new Paragraph("Type of facility"));
   table1.getCell(0, 2).addContent(new Paragraph("Amount (Kshs)"));
