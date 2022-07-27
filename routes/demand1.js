@@ -431,7 +431,7 @@ router.post('/download', function (req, res) {
             const bucket = 'demandletters';
             const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "demand1.docx"
             var metaData = {
-                'Content-Type': 'text/html',
+                'content-type': 'text/html',
                 'Content-Language': 123,
                 'X-Amz-Meta-Testing': 1234,
                 'example': 5678
