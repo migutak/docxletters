@@ -62,8 +62,7 @@ router.post('/download', function (req, res) {
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
-
-
+    console.log(req.body);
 
 
     let NOTICE = 'fourteen days (14)';
