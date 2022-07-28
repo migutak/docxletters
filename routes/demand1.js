@@ -12,7 +12,7 @@ require('log-timestamp');
 var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
     port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
-    useSSL: false, 
+    useSSL: false,
     accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
     secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
@@ -62,7 +62,7 @@ router.post('/download', function (req, res) {
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
 
-    console.log(req.body);
+    console.log(req.headers);
 
 
     let NOTICE = 'fourteen days (14)';
@@ -253,9 +253,9 @@ router.post('/download', function (req, res) {
                 DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].instamount)).format('0,0.00') + ' DR',
                 DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].oustbalance + DATA[i].instamount)).format('0,0.00') + ' DR'
                 ])
+
             }
-            console.log(DATA[i].oustbalance);
-            console.log(DATA[i].instamount);
+            
 
             function guarantors() {
                 if (GUARANTORS.length > 0) {
@@ -430,12 +430,35 @@ router.post('/download', function (req, res) {
             const bucket = 'demandletters';
             const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "demand1.docx"
             var metaData = {
-                'content-type': 'text/html',
+                'Content-Type': 'text/html',
                 'Content-Language': 123,
                 'X-Amz-Meta-Testing': 1234,
                 'example': 5678
             }
-            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+            async function handler(req, res) {
+                //
+            }
+
+
+            (async () => {
+                await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
+                    if (error) {
+                        console.log(error);
+                        res.status(500).json({
+                            success: false,
+                            error: error.message
+                        })
+                    }
+                    res.json({
+                        result: 'success',
+                        message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
+                        filename: accnumber_masked + DATE + "demand1.docx",
+                        savedfilename: savedfilename,
+                        objInfo: objInfo
+                    })
+                });
+            })();
+            /*minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
                 if (error) {
                     console.log(error);
                     res.status(500).json({
@@ -451,11 +474,20 @@ router.post('/download', function (req, res) {
                     objInfo: objInfo
                 })
             });
+            var conds = new Minio.CopyConditions()
+            conds.setMatchETag('bd891862ea3e22c93ed53a098218791d')
+            minioClient.copyObject(bucket, savedfilename, filelocation, conds, function(e, data) {
+            if (e) {
+                return console.log(e)
+            }
+            console.log("Successfully copied the object:")
+            console.log("etag = " + data.etag + ", lastModified = " + data.lastModified)
+            })*/
             //save to mino end
         }
     }).catch((err) => {
         console.log(err);
-        res.json({
+        res.status(500).json({
             result: 'error',
             message: 'Exception occured'
         });
