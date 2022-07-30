@@ -29,7 +29,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const GURARANTORS = req.body.guarantors || [];
   const INCLUDELOGO = req.body.showlogo;
@@ -251,87 +251,37 @@ router.post('/download', function (req, res) {
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "day30.docx", buffer);
-    //conver to pdf
-    // if pdf format
-    /*if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day30.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'day30.pdf', data);
-            // save to minio
-            const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day30.pdf";
-            const bucket = 'demandletters';
-            const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day30.pdf"
-            var metaData = {
-              'Content-Type': 'text/html',
-              'Content-Language': 123,
-              'X-Amz-Meta-Testing': 1234,
-              'example': 5678
-            }
-            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-              if (error) {
-                console.log(error);
-                res.status(500).json({
-                  success: false,
-                  error: error.message
-                })
-              }
-              res.json({
-                result: 'success',
-                message: LETTERS_DIR + letter_data.acc + DATE + "day30.pdf",
-                filename: letter_data.acc + DATE + "day30.pdf",
-                savedfilename: savedfilename,
-                objInfo: objInfo
-              })
-            });
-            //save to mino end
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
-      }
-      convert();
-    } else {*/
-      // save to minio
-      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day30.docx";
-      const bucket = 'demandletters';
-      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day30.docx"
-      var metaData = {
-        'Content-Type': 'text/html',
-        'Content-Language': 123,
-        'X-Amz-Meta-Testing': 1234,
-        'example': 5678
-      }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + letter_data.acc + DATE + "day30.docx",
-          filename: letter_data.acc + DATE + "day30.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
-      //save to mino end
-   // }
-  }).catch((err) => {
-    console.log(err);
+    // save to minio
+    const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day30.docx";
+    const bucket = 'demandletters';
+    const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day30.docx"
+    var metaData = {
+      'Content-Type': 'text/html',
+      'Content-Language': 123,
+      'X-Amz-Meta-Testing': 1234,
+      'example': 5678
+    }
+    const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
     res.json({
-      result: 'error',
-      message: 'Exception occured'
-    });
-  });
+      result: 'success',
+      message: LETTERS_DIR + letter_data.acc + DATE + "day30.docx",
+      filename: letter_data.acc + DATE + "day30.docx",
+      savedfilename: savedfilename,
+      objInfo: objInfo
+    })
+
+    //save to mino end
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
 });
 
 module.exports = router;

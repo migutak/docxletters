@@ -45,7 +45,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const INCLUDELOGO = req.body.showlogo;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
@@ -246,9 +246,9 @@ router.post('/download', function (req, res) {
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "overdue.docx", buffer);
-    //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       var dd = {
@@ -378,7 +378,7 @@ router.post('/download', function (req, res) {
       writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.pdf");
       pdfDoc.pipe(writeStream);
       pdfDoc.end();
-      writeStream.on('finish', function () {
+      writeStream.on('finish', async function () {
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "overduecc.pdf";
         const bucket = 'demandletters';
@@ -389,22 +389,16 @@ router.post('/download', function (req, res) {
           'X-Amz-Meta-Testing': 1234,
           'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-          if (error) {
-            console.log(error);
-            res.status(500).json({
-              success: false,
-              error: error.message
-            })
-          }
-          res.json({
-            result: 'success',
-            message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.pdf",
-            filename: accnumber_masked + DATE + "overduecc.pdf",
-            savedfilename: savedfilename,
-            objInfo: objInfo
-          })
-        });
+        const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+        
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.pdf",
+          filename: accnumber_masked + DATE + "overduecc.pdf",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+
         //save to mino end
       });
     } else {
@@ -418,31 +412,26 @@ router.post('/download', function (req, res) {
         'X-Amz-Meta-Testing': 1234,
         'example': 5678
       }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.docx",
-          filename: accnumber_masked + DATE + "overduecc.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
+      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+      
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.docx",
+        filename: accnumber_masked + DATE + "overduecc.docx",
+        savedfilename: savedfilename,
+        objInfo: objInfo
+      })
+
       //save to mino end
     }
-  }).catch((err) => {
+  } catch (error) {
     console.log(err);
     res.json({
       result: 'error',
       message: 'Exception occured'
     });
-  });
+  }
+
 });
 
 module.exports = router;

@@ -44,7 +44,7 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
     const letter_data = req.body;
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
@@ -99,7 +99,7 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [250, '*'],
                     body: [
-                        [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
                         ['Date: ' + repodate2, 'Valid up to: ' + DATEEXPIRY],
                         ['To ', ': ' + letter_data.auctioneername],
                         ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
@@ -127,7 +127,7 @@ router.post('/download', function (req, res) {
                     { text: 'Kes. ' + numeral(Math.abs(letter_data.totalamount)).format('0,0.00'), fontSize: 10, bold: true },
                     ' plus your own charges, failing which you may take this letter as your authority to effect immediate re-possession',
                     ' of the above/equipment without further reference to us.',
-                    { text: 'HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED.', fontSize: 10, bold: true},
+                    { text: 'HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED.', fontSize: 10, bold: true },
                     'From our records, we are able to give the following additional information regarding this Agreement, which may assist you in your task of locating the hirer and/or the motor vehicle/equipment:-',
                 ]
             },
@@ -138,7 +138,7 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [200, '*'],
                     body: [
-                        [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
                         ['Postal Address', ':      ' + letter_data.postaladdress || 'N/A'],
                         ['Telephone', ':     ' + letter_data.celnumber || 'N/A'],
                         ['Physical Address/Location', ':     ' + letter_data.place || 'N/A'],
@@ -212,12 +212,7 @@ router.post('/download', function (req, res) {
     writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf");
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
-    writeStream.on('finish', function () {
-        // res.json({
-        //     result: 'success',
-        //     message: LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
-        //     filename: letter_data.accnumber + DATE + "repossession.pdf"
-        // })
+    writeStream.on('finish', async function () {
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
         const bucket = 'demandletters';
@@ -228,15 +223,10 @@ router.post('/download', function (req, res) {
             'X-Amz-Meta-Testing': 1234,
             'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-            if (error) {
-                console.log(error);
-                res.status(500).json({
-                    success: false,
-                    error: error.message
-                })
-                // deleteFile(filelocation);
-            }
+
+        try {
+            const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
             res.json({
                 result: 'success',
                 message: LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf",
@@ -244,8 +234,13 @@ router.post('/download', function (req, res) {
                 savedfilename: savedfilename,
                 objInfo: objInfo
             })
-            // deleteFile(filelocation);
-        });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            })
+        }
         //save to mino end
 
         // send email
@@ -253,7 +248,7 @@ router.post('/download', function (req, res) {
             emaildata.email = letter_data.auctioneeremail,
             emaildata.vehicleRegnumber = letter_data.vehicleregno,
             emaildata.path = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
-           // emaildata.cc = [letter_data.emailaddress];
+        // emaildata.cc = [letter_data.emailaddress];
 
 
         var transporter = nodemailer.createTransport({
@@ -263,10 +258,10 @@ router.post('/download', function (req, res) {
             tls: { rejectUnauthorized: false },
             debug: true,
             auth: {
-              user: data.smtpuser,
-              pass: data.pass
+                user: data.smtpuser,
+                pass: data.pass
             }
-          });
+        });
 
         // verify connection configuration
         transporter.verify(function (error, success) {
@@ -322,14 +317,5 @@ router.post('/download', function (req, res) {
 
     });
 });
-// function deleteFile(req) {
-//     fs.unlink(req, (err) => {
-//         if (err) {
-//             console.error(err)
-//             return
-//         }
-//         //file removed
-//     })
-// }
 
 module.exports = router;

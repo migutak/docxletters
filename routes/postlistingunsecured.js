@@ -11,11 +11,11 @@ require('log-timestamp');
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
-    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
-    useSSL: false, 
-    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
-    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
 
 var data = require('./data.js');
@@ -39,7 +39,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
@@ -115,17 +115,17 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
 
-const nametext = new TextRun(letter_data.custname);
-    const pnametext = new Paragraph();
-    nametext.allCaps();
-    pnametext.addRun(nametext);
-    document.addParagraph(pnametext);
+  const nametext = new TextRun(letter_data.custname);
+  const pnametext = new Paragraph();
+  nametext.allCaps();
+  pnametext.addRun(nametext);
+  document.addParagraph(pnametext);
 
-    const addresstext = new TextRun(letter_data.address + '-' + letter_data.postcode);
-    const paddresstext = new Paragraph();
-    addresstext.allCaps();
-    paddresstext.addRun(addresstext);
-    document.addParagraph(paddresstext);
+  const addresstext = new TextRun(letter_data.address + '-' + letter_data.postcode);
+  const paddresstext = new Paragraph();
+  addresstext.allCaps();
+  paddresstext.addRun(addresstext);
+  document.addParagraph(paddresstext);
 
   document.createParagraph(" ");
 
@@ -153,7 +153,7 @@ const nametext = new TextRun(letter_data.custname);
   document.createParagraph(" ");
   document.createParagraph("Please note that interest continues to accrue at various Bank rates until the outstanding balance is paid in full. ");
   document.createParagraph(" ");
-  document.createParagraph("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before "+ dateFormat(beforedate, 'dd-mmm-yyyy'), +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;");
+  document.createParagraph("Kindly make the necessary arrangements to repay the outstanding balance within the next Fourteen (14) days from the date of this letter, i.e. on or before " + dateFormat(beforedate, 'dd-mmm-yyyy'), +", failure to which we shall have no option but to exercise any of the remedies below against you, to recover the said outstanding amount at your risk as to costs and expenses arising without further reference to you;");
   document.createParagraph("1.	Appoint an External Debt Collector. ");
   document.createParagraph("2.	File suit against you. ");
   document.createParagraph(" ");
@@ -248,7 +248,7 @@ const nametext = new TextRun(letter_data.custname);
   document.createParagraph(" ");
   document.createParagraph(" ");
   document.createParagraph("                                                                                       Charles Otieno");
-  document.createParagraph(letter_data.arocode                                           +    "                                                                        For Manager Remedial Management,");
+  document.createParagraph(letter_data.arocode + "                                                                        For Manager Remedial Management,");
   document.createParagraph("Credit Management Division.                                       Credit Management Division.");
 
 
@@ -264,9 +264,9 @@ const nametext = new TextRun(letter_data.custname);
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx", buffer);
-    //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
@@ -298,31 +298,27 @@ const nametext = new TextRun(letter_data.custname);
         'X-Amz-Meta-Testing': 1234,
         'example': 5678
       }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx",
-          filename: letter_data.acc + DATE + "postlistingunsecured.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
+      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + letter_data.acc + DATE + "postlistingunsecured.docx",
+        filename: letter_data.acc + DATE + "postlistingunsecured.docx",
+        savedfilename: savedfilename,
+        objInfo: objInfo
+      })
+
       //save to mino end
     }
-  }).catch((err) => {
-    console.log(err);
-    res.json({
-      result: 'error',
-      message: 'Exception occured'
-    });
-  });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+
+  
 });
 
 module.exports = router;

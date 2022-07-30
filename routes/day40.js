@@ -29,7 +29,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const GURARANTORS = req.body.guarantors || [];
   const INCLUDELOGO = req.body.showlogo;
@@ -118,7 +118,7 @@ router.post('/download', function (req, res) {
   document.createParagraph("Dear Sir/Madam ");
   document.createParagraph(" ");
 
-  const headertext = new TextRun("RE: NOTIFICATION OF SALE OF PROPERTY L.R NO. "+letter_data.lrno.toUpperCase()+"	");
+  const headertext = new TextRun("RE: NOTIFICATION OF SALE OF PROPERTY L.R NO. " + letter_data.lrno.toUpperCase() + "	");
   const paragraphheadertext = new Paragraph();
   headertext.bold();
   headertext.underline();
@@ -137,13 +137,13 @@ router.post('/download', function (req, res) {
   document.addParagraph(ptxt3);
 
   document.createParagraph(" ");
-  document.createParagraph("The said facility is secured by inter alia, a legal charge over L.R NO. "+letter_data.lrno.toUpperCase()+" registered in the name of "+letter_data.regowner.toUpperCase()+".");
+  document.createParagraph("The said facility is secured by inter alia, a legal charge over L.R NO. " + letter_data.lrno.toUpperCase() + " registered in the name of " + letter_data.regowner.toUpperCase() + ".");
   document.createParagraph(" ");
 
   const note1 = new TextRun("TAKE NOTICE");
   note1.bold();
   note1.size(24);
-  const note = new TextRun("TAKE NOTICE that pursuant to the provisions of Section 96(2) of the Land Act, 2012 the Bank intends to exercise its statutory power of sale over L.R NO. "+letter_data.lrno.toUpperCase()+" aforesaid after expiry of FORTY (40) DAYS from the date of service of this Notice upon yourself unless you rectify the default and all the outstanding balances owned to the Bank are fully settled within the aforesaid period. ");
+  const note = new TextRun("TAKE NOTICE that pursuant to the provisions of Section 96(2) of the Land Act, 2012 the Bank intends to exercise its statutory power of sale over L.R NO. " + letter_data.lrno.toUpperCase() + " aforesaid after expiry of FORTY (40) DAYS from the date of service of this Notice upon yourself unless you rectify the default and all the outstanding balances owned to the Bank are fully settled within the aforesaid period. ");
   const pnote = new Paragraph();
 
   pnote.addRun(note);
@@ -178,87 +178,39 @@ router.post('/download', function (req, res) {
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "day40.docx", buffer);
-    //conver to pdf
-    // if pdf format
-    /*if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.acc + DATE + "day40.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + 'day40.pdf', data);
-            // save to minio
-            const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day40.pdf";
-            const bucket = 'demandletters';
-            const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day40.pdf"
-            var metaData = {
-              'Content-Type': 'text/html',
-              'Content-Language': 123,
-              'X-Amz-Meta-Testing': 1234,
-              'example': 5678
-            }
-            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-              if (error) {
-                console.log(error);
-                res.status(500).json({
-                  success: false,
-                  error: error.message
-                })
-              }
-              res.json({
-                result: 'success',
-                message: LETTERS_DIR + letter_data.acc + DATE + "day40.pdf",
-                filename: letter_data.acc + DATE + "day40.pdf",
-                savedfilename: savedfilename,
-                objInfo: objInfo
-              })
-            });
-            //save to mino end
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
-      }
-      convert();
-    } else {*/
-      // save to minio
-      const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day40.docx";
-      const bucket = 'demandletters';
-      const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day40.docx"
-      var metaData = {
-        'Content-Type': 'text/html',
-        'Content-Language': 123,
-        'X-Amz-Meta-Testing': 1234,
-        'example': 5678
-      }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + letter_data.acc + DATE + "day40.docx",
-          filename: letter_data.acc + DATE + "day40.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
-      //save to mino end
-    //}
-  }).catch((err) => {
-    console.log(err);
+    // save to minio
+    const filelocation = LETTERS_DIR + letter_data.acc + DATE + "day40.docx";
+    const bucket = 'demandletters';
+    const savedfilename = letter_data.acc + '_' + Date.now() + '_' + "day40.docx"
+    var metaData = {
+      'Content-Type': 'text/html',
+      'Content-Language': 123,
+      'X-Amz-Meta-Testing': 1234,
+      'example': 5678
+    }
+    const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
     res.json({
-      result: 'error',
-      message: 'Exception occured'
-    });
-  });
+      result: 'success',
+      message: LETTERS_DIR + letter_data.acc + DATE + "day40.docx",
+      filename: letter_data.acc + DATE + "day40.docx",
+      savedfilename: savedfilename,
+      objInfo: objInfo
+    })
+
+    //save to mino end
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+
+
 });
 
 module.exports = router;

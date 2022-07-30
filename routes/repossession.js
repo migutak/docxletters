@@ -30,7 +30,7 @@ var fonts = {
 };
 
 var PdfPrinter = require('pdfmake');
-const {request} = require("express");
+const { request } = require("express");
 var printer = new PdfPrinter(fonts);
 
 router.use(bodyParser.urlencoded({
@@ -103,27 +103,27 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [250, '*'],
                     body: [
-                      [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
                         ['Date: ' + repodate2, 'Valid up to: ' + DATEEXPIRY],
-                      ['To ', ': ' + letter_data.auctioneerName],
-                      ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
-                      ['Hirer’s Name ', ':     ' + letter_data.ipfBalance],
-                      ['Unit Financed ', ':     ' + letter_data.vehicleMake + ' & ' + letter_data.vehicleModel],
-                      ['Registration No ', ':     ' + letter_data.vehicleRegnumber],
+                        ['To ', ': ' + letter_data.auctioneerName],
+                        ['Asset Finance Agreement No.', ': ' + letter_data.assetfaggnum],
+                        ['Hirer’s Name ', ':     ' + letter_data.ipfBalance],
+                        ['Unit Financed ', ':     ' + letter_data.vehicleMake + ' & ' + letter_data.vehicleModel],
+                        ['Registration No ', ':     ' + letter_data.vehicleRegnumber],
                     ]
                 },
                 layout: 'noBorders',
-                
+
             },
             '\n',
-            
+
             {
                 text: [
                     '\nAccording to our records, the monthly rental of the above Asset finance Agreement is now in arrears. The total amount due is ',
                     { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
                     '. ',
                 ]
-                
+
             },
             {
                 text: [
@@ -131,33 +131,33 @@ router.post('/download', function (req, res) {
                     { text: 'Kes. ' + numeral(Math.abs(letter_data.totalAmount)).format('0,0.00'), fontSize: 10, bold: true },
                     ' plus your own charges, failing which you may take this letter as your authority to effect immediate re-possession',
                     ' of the above/equipment without further reference to us.',
-                    { text: 'HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED.', fontSize: 10, bold: true},
+                    { text: 'HIRER MUST MAKE PAYMENT VIDE CASH OR BY BANKER’S CHEQUE AS PERSONAL CHEQUE(S) WILL NOT BE ACCEPTED.', fontSize: 10, bold: true },
                     'From our records, we are able to give the following additional information regarding this Agreement, which may assist you in your task of locating the hirer and/or the motor vehicle/equipment:-',
                 ]
             },
             '\n',
-            
+
             {
                 table: {
                     headerRows: 1,
                     widths: [200, '*'],
                     body: [
-                      [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
-                      ['Postal Address', ':      ' + letter_data.postaladdress || 'N/A'],
-                      ['Telephone', ':     ' + letter_data.phoneNumber || 'N/A'],
-                      ['Physical Address/Location', ':     ' + letter_data.place || 'N/A'],
-                      ['Type of Business', ':      ' + letter_data.typeofbusiness || 'N/A'],
-                      ['Bankers and Branch', ':     ' + letter_data.branchName || 'N/A'],
-                      ['Purpose of Vehicle', ':     ' + letter_data.purposeofVehicle || 'N/A'],
-                      ['Guarantors', ':     ' + letter_data.Guarantors || 'N/A'],
-                      ['Guarantors Address', ':     ' + letter_data.GuarantorsAddress || 'N/A'],
-                      ['Chassis No.', ':     ' + letter_data.chasisNumber || 'N/A'],
-                      ['Engine No.', ':     ' + letter_data.EngineNo || 'N/A'],
-                      ['Any other information', '     ' + letter_data.otherInformation || 'N/A']
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
+                        ['Postal Address', ':      ' + letter_data.postaladdress || 'N/A'],
+                        ['Telephone', ':     ' + letter_data.phoneNumber || 'N/A'],
+                        ['Physical Address/Location', ':     ' + letter_data.place || 'N/A'],
+                        ['Type of Business', ':      ' + letter_data.typeofbusiness || 'N/A'],
+                        ['Bankers and Branch', ':     ' + letter_data.branchName || 'N/A'],
+                        ['Purpose of Vehicle', ':     ' + letter_data.purposeofVehicle || 'N/A'],
+                        ['Guarantors', ':     ' + letter_data.Guarantors || 'N/A'],
+                        ['Guarantors Address', ':     ' + letter_data.GuarantorsAddress || 'N/A'],
+                        ['Chassis No.', ':     ' + letter_data.chasisNumber || 'N/A'],
+                        ['Engine No.', ':     ' + letter_data.EngineNo || 'N/A'],
+                        ['Any other information', '     ' + letter_data.otherInformation || 'N/A']
                     ]
                 },
                 layout: 'noBorders',
-                
+
             },
 
             { text: '\n\nVehicle tracked by: ' + letter_data.trackingCompany, fontSize: 10, alignment: 'left' },
@@ -212,12 +212,7 @@ router.post('/download', function (req, res) {
     writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf");
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
-    writeStream.on('finish', function () {
-        // res.json({
-        //     result: 'success',
-        //     message: LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
-        //     filename: letter_data.accnumber + DATE + "repossession.pdf"
-        // }
+    writeStream.on('finish', async function () {
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf";
         const bucket = 'demandletters';
@@ -228,15 +223,10 @@ router.post('/download', function (req, res) {
             'X-Amz-Meta-Testing': 1234,
             'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-            if (error) {
-                console.log(error);
-                res.status(500).json({
-                    success: false,
-                    error: error.message
-                })
-                deleteFile(filelocation);
-            }
+
+        try {
+            const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
             res.json({
                 result: 'success',
                 message: LETTERS_DIR + accnumber_masked + DATE + "repossession.pdf",
@@ -245,7 +235,14 @@ router.post('/download', function (req, res) {
                 objInfo: objInfo
             })
             deleteFile(filelocation);
-        });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            })
+        }
+
         //save to mino end
 
     })
@@ -256,7 +253,6 @@ router.post('/download', function (req, res) {
         emaildata.vehicleRegnumber = letter_data.vehicleRegnumber,
         emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "repossession.pdf",
         emaildata.cc = [letter_data.email];
-    console.log(emaildata);
 
 
     let transporter = nodemailer.createTransport({

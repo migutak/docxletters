@@ -10,7 +10,7 @@ require('log-timestamp');
 var minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
     port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
-    useSSL: false, 
+    useSSL: false,
     accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
     secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
@@ -38,7 +38,7 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
     console.log(req.body);
     const letter_data = req.body;
     var date1 = new Date();
@@ -139,7 +139,7 @@ router.post('/download', function (req, res) {
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.clientname + '-' + letter_data.accnumber},
+            { text: '' + letter_data.clientname + '-' + letter_data.accnumber },
             { text: '' + letter_data.branchname }
         ],
 
@@ -184,24 +184,20 @@ router.post('/download', function (req, res) {
     writeStream = fs.createWriteStream(filelocation);
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
-    writeStream.on('finish', function () {
+    writeStream.on('finish', async function () {
         // save to minio
         const bucket = 'demandletters';
-        const savedfilename = letter_data.accnumber  + '_' + Date.now() + '_' + "ipfcancellation.pdf"
+        const savedfilename = letter_data.accnumber + '_' + Date.now() + '_' + "ipfcancellation.pdf"
         var metaData = {
             'Content-Type': 'text/html',
             'Content-Language': 123,
             'X-Amz-Meta-Testing': 1234,
             'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-            if (error) {
-                console.log(error);
-                res.status(500).json({
-                    success: false,
-                    error: error.message
-                })
-            }
+
+        try {
+            const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
             res.json({
                 result: 'success',
                 message: filelocation,
@@ -209,7 +205,13 @@ router.post('/download', function (req, res) {
                 savedfilename: savedfilename,
                 objInfo: objInfo
             })
-        });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            })
+        }
         //save to mino end
     });
 });

@@ -32,7 +32,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
@@ -237,51 +237,33 @@ router.post('/download', function (req, res) {
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx", buffer);
-    //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
-      const convert = () => {
-        word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx")
-          .then(data => {
-            fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'postlistingunsecured.pdf', data);
-            // save to minio
-            const filelocation = LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.pdf";
-            const bucket = 'demandletters';
-            const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "postlistingunsecured.pdf"
-            var metaData = {
-              'Content-Type': 'text/html',
-              'Content-Language': 123,
-              'X-Amz-Meta-Testing': 1234,
-              'example': 5678
-            }
-            minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-              if (error) {
-                console.log(error);
-                res.status(500).json({
-                  success: false,
-                  error: error.message
-                })
-              }
-              res.json({
-                result: 'success',
-                message: LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.pdf",
-                filename: accnumber_masked + DATE + "postlistingunsecured.pdf",
-                savedfilename: savedfilename,
-                objInfo: objInfo
-              })
-            });
-            //save to mino end
-          }, error => {
-            console.log('error ...', error)
-            res.json({
-              result: 'error',
-              message: 'Exception occured'
-            });
-          })
+      const data = await word2pdf.word2pdf(LETTERS_DIR + letter_data.cardacct + DATE + "postlistingunsecured.docx");
+      fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + 'postlistingunsecured.pdf', data);
+      // save to minio
+      const filelocation = LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.pdf";
+      const bucket = 'demandletters';
+      const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "postlistingunsecured.pdf"
+      var metaData = {
+        'Content-Type': 'text/html',
+        'Content-Language': 123,
+        'X-Amz-Meta-Testing': 1234,
+        'example': 5678
       }
-      convert();
+      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.pdf",
+        filename: accnumber_masked + DATE + "postlistingunsecured.pdf",
+        savedfilename: savedfilename,
+        objInfo: objInfo
+      })
+      //save to mino end
     } else {
       // save to minio
       const filelocation = LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.docx";
@@ -293,31 +275,26 @@ router.post('/download', function (req, res) {
         'X-Amz-Meta-Testing': 1234,
         'example': 5678
       }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.docx",
-          filename: accnumber_masked + DATE + "postlistingunsecured.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
+      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "postlistingunsecured.docx",
+        filename: accnumber_masked + DATE + "postlistingunsecured.docx",
+        savedfilename: savedfilename,
+        objInfo: objInfo
+      })
+
       //save to mino end
     }
-  }).catch((err) => {
-    console.log(err);
-    res.json({
-      result: 'error',
-      message: 'Exception occured'
-    });
-  });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+
 });
 
 module.exports = router;

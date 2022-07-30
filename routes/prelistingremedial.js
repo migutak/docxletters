@@ -11,11 +11,11 @@ require('log-timestamp');
 var Minio = require("minio");
 
 var minioClient = new Minio.Client({
-    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
-    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
-    useSSL: false, 
-    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
-    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+  endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+  port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
+  useSSL: false,
+  accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+  secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
 });
 
 var data = require('./data.js');
@@ -35,7 +35,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const GURARANTORS = req.body.guarantors;
   const INCLUDELOGO = req.body.showlogo;
@@ -44,19 +44,19 @@ router.post('/download', function (req, res) {
   //
   //
   const document = new Document();
-  
-    const footer1 = new TextRun(data.footerfirst)
-      .size(16)
-    const parafooter1 = new Paragraph()
-    parafooter1.addRun(footer1).center();
-    document.Footer.addParagraph(parafooter1);
-    const footer2 = new TextRun(data.footersecond)
-      .size(16)
-    const parafooter2 = new Paragraph()
-    parafooter1.addRun(footer2).center();
-    document.Footer.addParagraph(parafooter2);
 
-    //logo start
+  const footer1 = new TextRun(data.footerfirst)
+    .size(16)
+  const parafooter1 = new Paragraph()
+  parafooter1.addRun(footer1).center();
+  document.Footer.addParagraph(parafooter1);
+  const footer2 = new TextRun(data.footersecond)
+    .size(16)
+  const parafooter2 = new Paragraph()
+  parafooter1.addRun(footer2).center();
+  document.Footer.addParagraph(parafooter2);
+
+  //logo start
   if (INCLUDELOGO == true) {
     document.createImage(fs.readFileSync(IMAGEPATH + "coop.jpg"), 350, 60, {
       floating: {
@@ -111,17 +111,17 @@ router.post('/download', function (req, res) {
 
   document.createParagraph(" ");
 
-const nametext = new TextRun(letter_data.custname);
-    const pnametext = new Paragraph();
-    nametext.allCaps();
-    pnametext.addRun(nametext);
-    document.addParagraph(pnametext);
+  const nametext = new TextRun(letter_data.custname);
+  const pnametext = new Paragraph();
+  nametext.allCaps();
+  pnametext.addRun(nametext);
+  document.addParagraph(pnametext);
 
-    const addresstext = new TextRun(letter_data.address + '-' + letter_data.postcode);
-    const paddresstext = new Paragraph();
-    addresstext.allCaps();
-    paddresstext.addRun(addresstext);
-    document.addParagraph(paddresstext);
+  const addresstext = new TextRun(letter_data.address + '-' + letter_data.postcode);
+  const paddresstext = new Paragraph();
+  addresstext.allCaps();
+  paddresstext.addRun(addresstext);
+  document.addParagraph(paddresstext);
 
   document.createParagraph(" ");
 
@@ -180,12 +180,12 @@ const nametext = new TextRun(letter_data.custname);
     table.getCell(row, 3).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].princarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 4).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].intarrears)).format('0,0.00') + ' DR'));
     table.getCell(row, 5).addContent(new Paragraph(DATA[i].currency + ' ' + numeral(Math.abs(DATA[i].totalarrears)).format('0,0.00') + ' DR'));
-    table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency +  ' 0.00'));
+    table.getCell(row, 6).addContent(new Paragraph(DATA[i].currency + ' 0.00'));
     table.getCell(row, 7).addContent(new Paragraph('Over 60 days'));
     table.getCell(row, 8).addContent(new Paragraph('14%'));
   }
 
-  
+
 
   document.createParagraph(" ");
   const txt3 = new TextRun("We hereby notify you that we will proceed to adversely list you with the CRBs if your loan (s) becomes non-performing. To avoid an adverse listing, you are advised to clear the outstanding arrears.  ");
@@ -271,7 +271,7 @@ const nametext = new TextRun(letter_data.custname);
   document.createParagraph(" ");
   document.createParagraph(" ");
   document.createParagraph("                                                                                                    JOYCE MBINDA");
-  document.createParagraph(letter_data.arocode                                           +    "                                                                                     MANAGER REMEDIAL MANAGEMENT");
+  document.createParagraph(letter_data.arocode + "                                                                                     MANAGER REMEDIAL MANAGEMENT");
   document.createParagraph("CREDIT MANAGEMENT DIVISION.                                    CREDIT MANAGEMENT DIVISION.");
 
 
@@ -297,9 +297,9 @@ const nametext = new TextRun(letter_data.custname);
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.docx", buffer);
-    //conver to pdf
     // if pdf format
     if (letter_data.format == 'pdf') {
       const convert = () => {
@@ -331,31 +331,27 @@ const nametext = new TextRun(letter_data.custname);
         'X-Amz-Meta-Testing': 1234,
         'example': 5678
       }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.docx",
-          filename: letter_data.acc + DATE + "prelistingremedial.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
+      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + letter_data.acc + DATE + "prelistingremedial.docx",
+        filename: letter_data.acc + DATE + "prelistingremedial.docx",
+        savedfilename: savedfilename,
+        objInfo: objInfo
+      })
+
       //save to mino end
     }
-  }).catch((err) => {
-    console.log(err);
-    res.json({
-      result: 'error',
-      message: 'Exception occured'
-    });
-  });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+
+
 });
 
 module.exports = router;

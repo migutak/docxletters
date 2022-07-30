@@ -47,7 +47,7 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
     const letter_data = req.body;
     const INCLUDELOGO = true;
     var date1 = new Date();
@@ -76,11 +76,9 @@ router.post('/download', function (req, res) {
         ],
     });
 
-    
-    
 
-
-    Packer.toBuffer(doc).then((buffer) => {
+    try {
+        const buffer = await Packer.toBuffer(document);
         fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + "repossession.docx", buffer);
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "repossession.docx";
@@ -92,24 +90,22 @@ router.post('/download', function (req, res) {
             'X-Amz-Meta-Testing': 1234,
             'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-            if (error) {
-                console.log(error);
-                res.status(500).json({
-                    success: false,
-                    error: error.message
-                })
-            }
-            res.json({
-                result: 'success',
-                message: LETTERS_DIR + accnumber_masked + DATE + "repossession.docx",
-                filename: accnumber_masked + DATE + "repossession.docx",
-                savedfilename: savedfilename,
-                objInfo: objInfo
-            })
-        });
+        const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+        res.json({
+            result: 'success',
+            message: LETTERS_DIR + accnumber_masked + DATE + "repossession.docx",
+            filename: accnumber_masked + DATE + "repossession.docx",
+            savedfilename: savedfilename,
+            objInfo: objInfo
+        })
         //save to mino end
-    })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        })
+    }
 
 
 
