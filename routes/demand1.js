@@ -18,7 +18,7 @@ var minioClient = new Minio.Client({
 });
 
 var data = require('./data.js');
-
+var RESULTA = {};
 // Define font files
 var fonts = {
     Roboto: {
@@ -55,15 +55,12 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
     const letter_data = req.body;
     const GUARANTORS = req.body.guarantors || [];
     const INCLUDELOGO = req.body.showlogo;
     const DATA = req.body.accounts;
     const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
-
-    console.log(req.headers);
-
 
     let NOTICE = 'fourteen days (14)';
     //
@@ -113,7 +110,6 @@ router.post('/download', function (req, res) {
         });
     }
     // logo end
-
 
     document.createParagraph("The Co-operative Bank of Kenya Limited").left();
     document.createParagraph("Head Office").left();
@@ -235,13 +231,13 @@ router.post('/download', function (req, res) {
 
     const packer = new Packer();
 
-    packer.toBuffer(document).then((buffer) => {
+    try {
+        const buffer = await packer.toBuffer(document);
         fs.writeFileSync(LETTERS_DIR + accnumber_masked + DATE + "demand1.docx", buffer);
 
         //convert to pdf
         // if pdf format
         if (letter_data.format == 'pdf') {
-
             var body = [];
             body.push(['Account Number', 'Principal Loan', 'Outstanding Interest', 'Principal Arrears', 'Total Arrears', 'Total Outstanding'])
             for (i = 0; i < DATA.length; i++) {
@@ -255,7 +251,7 @@ router.post('/download', function (req, res) {
                 ])
 
             }
-            
+
 
             function guarantors() {
                 if (GUARANTORS.length > 0) {
@@ -391,7 +387,7 @@ router.post('/download', function (req, res) {
             writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf");
             pdfDoc.pipe(writeStream);
             pdfDoc.end();
-            writeStream.on('finish', function () {
+            writeStream.on('finish', async function() { 
                 // do stuff with the PDF file
                 // save to minio
                 const filelocation = LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf";
@@ -403,15 +399,8 @@ router.post('/download', function (req, res) {
                     'X-Amz-Meta-Testing': 1234,
                     'example': 5678
                 }
-                minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-                    if (error) {
-                        console.log(error);
-                        res.status(500).json({
-                            success: false,
-                            error: error.message
-                        })
-                        deleteFile(filelocation);
-                    }
+                const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+                   
                     res.json({
                         result: 'success',
                         message: LETTERS_DIR + accnumber_masked + DATE + "demand1.pdf",
@@ -420,9 +409,8 @@ router.post('/download', function (req, res) {
                         objInfo: objInfo
                     })
                     deleteFile(filelocation);
-                });
+                
                 //save to mino end
-
             });
         } else {
             // save to minio
@@ -435,63 +423,19 @@ router.post('/download', function (req, res) {
                 'X-Amz-Meta-Testing': 1234,
                 'example': 5678
             }
-            async function handler(req, res) {
-                //
-            }
-
-
-            (async () => {
-                await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-                    if (error) {
-                        console.log(error);
-                        res.status(500).json({
-                            success: false,
-                            error: error.message
-                        })
-                    }
-                    res.json({
-                        result: 'success',
-                        message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
-                        filename: accnumber_masked + DATE + "demand1.docx",
-                        savedfilename: savedfilename,
-                        objInfo: objInfo
-                    })
-                });
-            })();
-            /*minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-                if (error) {
-                    console.log(error);
-                    res.status(500).json({
-                        success: false,
-                        error: error.message
-                    })
-                }
-                res.json({
-                    result: 'success',
-                    message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
-                    filename: accnumber_masked + DATE + "demand1.docx",
-                    savedfilename: savedfilename,
-                    objInfo: objInfo
-                })
-            });
-            var conds = new Minio.CopyConditions()
-            conds.setMatchETag('bd891862ea3e22c93ed53a098218791d')
-            minioClient.copyObject(bucket, savedfilename, filelocation, conds, function(e, data) {
-            if (e) {
-                return console.log(e)
-            }
-            console.log("Successfully copied the object:")
-            console.log("etag = " + data.etag + ", lastModified = " + data.lastModified)
-            })*/
+            const result = await savetominio(bucket, savedfilename, filelocation, metaData);
+            res.json(result)
+            deleteFile(filelocation);
             //save to mino end
         }
-    }).catch((err) => {
+
+    } catch (err) {
         console.log(err);
         res.status(500).json({
             result: 'error',
-            message: 'Exception occured'
+            message: err.message
         });
-    });
+    }
 });
 
 function deleteFile(req) {
@@ -502,6 +446,28 @@ function deleteFile(req) {
         }
         //file removed
     })
+}
+
+
+async function savetominio(bucket, savedfilename, filelocation, metaData) {
+    const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
+    try {
+        const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+        RESULTA = {
+            result: 'success',
+            message: LETTERS_DIR + accnumber_masked + DATE + "demand1.docx",
+            filename: accnumber_masked + DATE + "demand1.docx",
+            savedfilename: savedfilename,
+            objInfo: objInfo
+        }
+        return RESULTA
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        })
+    }
 }
 
 module.exports = router;
