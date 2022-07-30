@@ -44,7 +44,7 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
     const letter_data = req.body;
     console.log(letter_data);
     const rawaccnumber = letter_data.acc;
@@ -54,7 +54,7 @@ router.post('/download', function (req, res) {
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
 
-    
+
     var docDefinition = {
         pageSize: 'A4',
         pageOrientation: 'portrait',
@@ -99,7 +99,7 @@ router.post('/download', function (req, res) {
 
             '\nDear Sir/Madam',
             {
-                text: '\nRe: RELEASE OF VEHICLE REG NO. ' + letter_data.vehicleregno ,
+                text: '\nRe: RELEASE OF VEHICLE REG NO. ' + letter_data.vehicleregno,
                 style: 'subheader'
             },
             {
@@ -132,13 +132,13 @@ router.post('/download', function (req, res) {
                     headerRows: 1,
                     widths: [200, '*'],
                     body: [
-                      [{text: '', style: 'tableHeader'}, {text: '', style: 'tableHeader'}],
-                      ['\n\n---------------------------, ', ' \n\n---------------------------------------'],
-                      ['REMEDIAL OFFICER', 'MANAGER, ADMIN & SUPPORT REMEDIAL MGT.']
+                        [{ text: '', style: 'tableHeader' }, { text: '', style: 'tableHeader' }],
+                        ['\n\n---------------------------, ', ' \n\n---------------------------------------'],
+                        ['REMEDIAL OFFICER', 'MANAGER, ADMIN & SUPPORT REMEDIAL MGT.']
                     ]
                 },
                 layout: 'noBorders',
-                
+
             },
 
 
@@ -186,33 +186,21 @@ router.post('/download', function (req, res) {
     writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "release.pdf");
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
-    writeStream.on('finish', function () {
-        // res.json({
-        //     result: 'success',
-        //     message: LETTERS_DIR + letter_data.accnumber + DATE + "release.pdf",
-        //     filename: letter_data.accnumber + DATE + "release.pdf"
-        // })
+    writeStream.on('finish', async function () {
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "release.pdf";
         const bucket = 'demandletters';
         const savedfilename = accnumber_masked + '_' + Date.now() + '_' + "release.pdf"
-        console.log(filelocation);
-        console.log(savedfilename);
         var metaData = {
             'Content-Type': 'text/html',
             'Content-Language': 123,
             'X-Amz-Meta-Testing': 1234,
             'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-            if (error) {
-                console.log(error);
-                res.status(500).json({
-                    success: false,
-                    error: error.message
-                })
-                deleteFile(filelocation);
-            }
+
+        try {
+            const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
             res.json({
                 result: 'success',
                 message: LETTERS_DIR + accnumber_masked + DATE + "release.pdf",
@@ -221,7 +209,13 @@ router.post('/download', function (req, res) {
                 objInfo: objInfo
             })
             deleteFile(filelocation);
-        });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            })
+        }
         //save to mino end
     });
 });

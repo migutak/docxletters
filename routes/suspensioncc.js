@@ -40,7 +40,7 @@ router.use(express.json());
 
 router.use(cors());
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const INCLUDELOGO = req.body.showlogo;
   const DATE = dateFormat(new Date(), "isoDate");
@@ -199,9 +199,6 @@ router.post('/download', function (req, res) {
   const paragraphsigntext = new Paragraph();
   const paragraphsigntext2 = new Paragraph();
   const paragraphsigntext3 = new Paragraph();
-  //signtext.bold();
-  //signtext.underline();
-  //signtext.size(28);
   paragraphsigntext.addRun(signtext);
   paragraphsigntext2.addRun(branchname);
   paragraphsigntext3.addRun(nosigntext);
@@ -213,9 +210,10 @@ router.post('/download', function (req, res) {
 
   const packer = new Packer();
 
-  packer.toBuffer(document).then((buffer) => {
+  try {
+    const buffer = await packer.toBuffer(document);
     fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "suspension.docx", buffer);
-    //conver to pdf
+
     // if pdf format
     if (letter_data.format == 'pdf') {
       var dd = {
@@ -324,7 +322,7 @@ router.post('/download', function (req, res) {
       writeStream = fs.createWriteStream(LETTERS_DIR + accnumber_masked + DATE + "suspension.pdf");
       pdfDoc.pipe(writeStream);
       pdfDoc.end();
-      writeStream.on('finish', function () {
+      writeStream.on('finish', async function () {
         // save to minio
         const filelocation = LETTERS_DIR + accnumber_masked + DATE + "suspension.pdf";
         const bucket = 'demandletters';
@@ -335,22 +333,16 @@ router.post('/download', function (req, res) {
           'X-Amz-Meta-Testing': 1234,
           'example': 5678
         }
-        minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-          if (error) {
-            console.log(error);
-            res.status(500).json({
-              success: false,
-              error: error.message
-            })
-          }
-          res.json({
-            result: 'success',
-            message: LETTERS_DIR + accnumber_masked + DATE + "suspension.pdf",
-            filename: accnumber_masked + DATE + "suspension.pdf",
-            savedfilename: savedfilename,
-            objInfo: objInfo
-          })
-        });
+        const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+        res.json({
+          result: 'success',
+          message: LETTERS_DIR + accnumber_masked + DATE + "suspension.pdf",
+          filename: accnumber_masked + DATE + "suspension.pdf",
+          savedfilename: savedfilename,
+          objInfo: objInfo
+        })
+
         //save to mino end
       });
     } else {
@@ -364,31 +356,27 @@ router.post('/download', function (req, res) {
         'X-Amz-Meta-Testing': 1234,
         'example': 5678
       }
-      minioClient.fPutObject(bucket, savedfilename, filelocation, metaData, function (error, objInfo) {
-        if (error) {
-          console.log(error);
-          res.status(500).json({
-            success: false,
-            error: error.message
-          })
-        }
-        res.json({
-          result: 'success',
-          message: LETTERS_DIR + accnumber_masked + DATE + "suspension.docx",
-          filename: accnumber_masked + DATE + "suspension.docx",
-          savedfilename: savedfilename,
-          objInfo: objInfo
-        })
-      });
+      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+      res.json({
+        result: 'success',
+        message: LETTERS_DIR + accnumber_masked + DATE + "suspension.docx",
+        filename: accnumber_masked + DATE + "suspension.docx",
+        savedfilename: savedfilename,
+        objInfo: objInfo
+      })
+
       //save to mino end
     }
-  }).catch((err) => {
-    console.log(err);
-    res.json({
-      result: 'error',
-      message: 'Exception occured'
-    });
-  });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    })
+  }
+
+
 });
 
 module.exports = router;
