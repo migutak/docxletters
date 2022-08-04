@@ -6,6 +6,14 @@ var dateFormat = require('dateformat');
 const nodemailer = require("nodemailer");
 const cors = require('cors');
 require('log-timestamp');
+var Minio = require("minio");
+var minioClient = new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || '127.0.0.1',
+    port: process.env.MINIO_PORT ? parseInt(process.env.MINIO_PORT, 10) : 9005,
+    useSSL: false,
+    accessKey: process.env.ACCESSKEY || 'AKIAIOSFODNN7EXAMPLE',
+    secretKey: process.env.SECRETKEY || 'wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY'
+});
 
 var data = require('./data.js');
 const emaildata = {};
@@ -36,7 +44,7 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/download', function (req, res) {
+router.post('/download', async function (req, res) {
     const letter_data = req.body;
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
@@ -157,12 +165,35 @@ router.post('/download', function (req, res) {
     writeStream = fs.createWriteStream(LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf");
     pdfDoc.pipe(writeStream);
     pdfDoc.end();
-    writeStream.on('finish', function () {
-        res.json({
+    writeStream.on('finish', async function () {
+        /*res.json({
             result: 'success',
             message: LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf",
             filename: letter_data.accnumber + DATE + "revocation.pdf"
-        });
+        });*/
+
+        // save to minio
+        const filelocation = LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf";
+        const bucket = 'demandletters';
+        const savedfilename = letter_data.accnumber + '_' + Date.now() + '_' + "revocation.pdf"
+        var metaData = {
+            'Content-Type': 'text/html',
+            'Content-Language': 123,
+            'X-Amz-Meta-Testing': 1234,
+            'example': 5678
+        }
+
+        try {
+            const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            })
+        }
+        //save to mino end 
 
         // send email
         emaildata.custname = letter_data.custname,
@@ -171,6 +202,7 @@ router.post('/download', function (req, res) {
             emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf",
             emaildata.cc = [letter_data.emailaddress];
 
+        // console.log(emaildata);
 
         var transporter = nodemailer.createTransport({
             host: data.smtpserver,
@@ -216,7 +248,7 @@ router.post('/download', function (req, res) {
             ]
         };
 
-        // send email
+        // send email 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.log(error);
