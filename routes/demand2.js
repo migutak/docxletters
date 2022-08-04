@@ -402,7 +402,6 @@ router.post('/download', async function (req, res) {
           savedfilename: savedfilename,
           objInfo: objInfo
         })
-
         //save to mino end
       });
     } else {

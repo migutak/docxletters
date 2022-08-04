@@ -167,20 +167,20 @@ router.post('/download', function (req, res) {
         // send email
         emaildata.custname = letter_data.custname,
             emaildata.email = letter_data.insuranceemail,
-            emaildata.branchemail = 'Collection Support <collectionssupport@co-opbank.co.ke>',
             emaildata.policynumber = letter_data.policynumber,
             emaildata.path = LETTERS_DIR + letter_data.accnumber + DATE + "revocation.pdf",
-            emaildata.cc = [letter_data.emailaddress, letter_data.username];
+            emaildata.cc = [letter_data.emailaddress];
 
-        console.log(emaildata);
 
-        let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // true for 465, false for other ports
+        var transporter = nodemailer.createTransport({
+            host: data.smtpserver,
+            port: data.smtpport,
+            secure: false, // upgrade later with STARTTLS
+            tls: { rejectUnauthorized: false },
+            debug: true,
             auth: {
-                user: 'allanmaroko10',
-                pass: 'Vipermarox411'
+                user: data.smtpuser,
+                pass: data.pass
             }
         });
 
@@ -194,7 +194,7 @@ router.post('/download', function (req, res) {
         });
 
         var mailOptions = {
-            from: emaildata.branchemail,
+            from: data.smtpuser,
             to: emaildata.email,
             cc: emaildata.cc,
             subject: "IPF Reinstatement - " + emaildata.custname + " ( Policy No: " + emaildata.policynumber + " )",
