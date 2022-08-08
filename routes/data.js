@@ -4,7 +4,7 @@ module.exports = {
     imagePath       : process.env.IMAGEPATH || '/app/docxletters/routes/', // 'd:\\angularprojects\\docxletters\\routes\\',
     SENDEMAILURL     : process.env.SENDEMAILURL || 'http://172.16.204.72:8005/ipfcancellation/email',
     smtpport: process.env.SMTPPORT || 2525,  // 465 FOR SECURE OR PROD
-    smtpuser:  'b6eef9a1d905d6',
+    smtpuser:  process.env.SMTPUSER || 'b6eef9a1d905d6',
     pass:  process.env.PASS || 'e4a461f71a936a',
     smtpserver: process.env.SMTPSERVER || 'smtp.mailtrap.io',   // office365.officer
     secure: false,
