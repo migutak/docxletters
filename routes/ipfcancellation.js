@@ -39,7 +39,6 @@ router.get('/', function (req, res) {
 
 
 router.post('/download', async function (req, res) {
-    console.log(req.body);
     const letter_data = req.body;
     var date1 = new Date();
     const DATE = dateFormat(date1, "dd-mmm-yyyy");
@@ -133,8 +132,8 @@ router.post('/download', async function (req, res) {
             { text: '\nYour co-operation is highly appreciated. ', fontSize: 11, alignment: 'left' },
 
             { text: '\nYours Faithfully,' },
-            { text: '\n\nJUDY MACHARIA,                                                                           JAMES KARANJA', style: 'tableHeader' },
-            { text: 'REMEDIAL CREDIT DEPARTMENT                                          FOR HEAD – MSME REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
+            { text: '\n\nJUDY MACHARIA,                                                                           TITUS MASHA', style: 'tableHeader' },
+            { text: 'REMEDIAL CREDIT DEPARTMENT                                                HEAD – REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
             { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 

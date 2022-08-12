@@ -137,8 +137,8 @@ router.post('/download', function (req, res) {
             { text: '\nYour co-operation is highly appreciated. ', fontSize: 11, alignment: 'left' },
 
             { text: '\nYours Faithfully,' },
-            { text: '\n\nJUDY MACHARIA,                                                                           JAMES KARANJA', style: 'tableHeader' },
-            { text: 'REMEDIAL CREDIT DEPARTMENT                                          FOR HEAD – MSME REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
+            { text: '\n\nJUDY MACHARIA,                                                                           TITUS MASHA', style: 'tableHeader' },
+            { text: 'REMEDIAL CREDIT DEPARTMENT                                                HEAD – REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
             { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 
@@ -205,12 +205,12 @@ router.post('/download', function (req, res) {
 
 
             let transporter = nodemailer.createTransport({
-                host: 'smtp.office365.com',
-                port: 587,
+                host: data.smtpserver,
+                port: data.smtpport,
                 secure: false, // true for 465, false for other ports
                 tls: { rejectUnauthorized: false },
                 auth: {
-                    user: data.user,
+                    user: data.smtpuser,
                     pass: data.pass
                 }
             }); 
