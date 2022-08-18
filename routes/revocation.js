@@ -104,21 +104,18 @@ router.post('/download', async function (req, res) {
             },
             {
                 text: [
-                    '\nWe herein notify you that the above applicant has regularized her Insurance Premium Finance (IPF) account, and advise you to reinstate the customer’s insurance policy.'
+                    '\nWe herein notify you that the above named client has fully paid the amount owing to us in instalment arrears and therefore we advise you not to act on our earlier cancellation notice.'
                 ]
             },
 
-            { text: '\nYour co-operation is highly appreciated. ', fontSize: 11, alignment: 'left' },
-
-            { text: '\nYours Faithfully,' },
-            { text: '\n\nDAVID MITHIA,                                                                           JAMES KARANJA', style: 'tableHeader' },
-            { text: 'REMEDIAL CREDIT DEPARTMENT                                          FOR HEAD – MSME REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
-            { text: '\n\n\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
+            { text: '\n\n\nYours Faithfully,' },
+            { text: '\n\nMITCHELLE ARUA,                                                                           PHOEBE BUTTO', style: 'tableHeader' },
+            { text: 'REMEDIAL CREDIT DEPARTMENT                                                REMEDIAL CREDIT DEPARTMENT ', style: 'tableHeader' },
+            { text: '\nThis letter is electronically generated and is valid without a signature ', fontSize: 9, italics: true, bold: true },
 
 
             { text: '\nCc ' },
-            { text: '' + letter_data.custname },
-            { text: '' + letter_data.branchname }
+            { text: '' + letter_data.custname + ' - ' +  letter_data.accnumber}
         ],
 
         styles: {
