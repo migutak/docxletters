@@ -49,6 +49,7 @@ router.post('/download', async function (req, res) {
   const letter_data = req.body;
   const INCLUDELOGO = req.body.showlogo;
   const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
+  const accnumber_masked = req.body.cardacct
 
   const document = new Document();
   if (INCLUDELOGO == true) {
