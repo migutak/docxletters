@@ -425,7 +425,7 @@ router.post('/download', async function (req, res) {
       //save to mino end
     }
   } catch (error) {
-    console.log(err);
+    console.log(error);
     res.json({
       result: 'error',
       message: 'Exception occured'
