@@ -17,6 +17,7 @@ var minioClient = new Minio.Client({
 });
 
 var data = require('./data.js');
+var RESULTA = {};
 
 // Define font files
 var fonts = {
@@ -249,7 +250,7 @@ router.post('/download', async function (req, res) {
 
   try {
     const buffer = await packer.toBuffer(document);
-    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "overdue.docx", buffer);
+    fs.writeFileSync(LETTERS_DIR + letter_data.cardacct + DATE + "overduecc.docx", buffer);
     // if pdf format
     if (letter_data.format == 'pdf') {
       var dd = {
@@ -391,7 +392,7 @@ router.post('/download', async function (req, res) {
           'example': 5678
         }
         const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
-        
+
         res.json({
           result: 'success',
           message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.pdf",
@@ -413,26 +414,61 @@ router.post('/download', async function (req, res) {
         'X-Amz-Meta-Testing': 1234,
         'example': 5678
       }
-      const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
-      
-      res.json({
-        result: 'success',
-        message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.docx",
-        filename: accnumber_masked + DATE + "overduecc.docx",
-        savedfilename: savedfilename,
-        objInfo: objInfo
-      })
+      //const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+      const result = await savetominio(accnumber_masked, bucket, savedfilename, filelocation, metaData);
+
+      if (result.result == 'success') {
+        res.json(result)
+        deleteFile(filelocation);
+      } else {
+        res.status(500).json({
+          result: 'error',
+          message: result.message
+        });
+      }
 
       //save to mino end
     }
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       result: 'error',
-      message: 'Exception occured'
+      message: error.message
     });
   }
 
 });
+
+function deleteFile(req) {
+  fs.unlink(req, (err) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    //file removed
+  })
+}
+
+async function savetominio(accnumber_masked, bucket, savedfilename, filelocation, metaData) {
+  const DATE = dateFormat(new Date(), "dd-mmm-yyyy");
+  try {
+    const objInfo = await minioClient.fPutObject(bucket, savedfilename, filelocation, metaData);
+    RESULTA = {
+      result: 'success',
+      message: LETTERS_DIR + accnumber_masked + DATE + "overduecc.docx",
+      filename: accnumber_masked + DATE + "overduecc.docx",
+      savedfilename: savedfilename,
+      objInfo: objInfo
+    }
+    return RESULTA
+  } catch (error) {
+    console.log(error);
+    RESULTA = {
+      result: 'error',
+      message: error.message
+    }
+    return RESULTA
+  }
+}
 
 module.exports = router;
